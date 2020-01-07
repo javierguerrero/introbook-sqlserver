@@ -1,8 +1,12 @@
 # SQL
 
+## Introducción a SQL
+
+## Instrucciones DML
+
 ## Consultas y subconsultas
 
-### ¿Qué es una conssulta?
+### ¿Qué es una consulta?
 
 * A query is a question or inquiry to a set of data. We use SQL, or Structured Query Language, to retrieve data from databases.
 
@@ -19,7 +23,6 @@
 ### ¿Qué es una subconsulta?
 
 * Es una consulta anidada que es parte de otra instrucción SELECT, INSERT, UPDATE, DELETE o bien otra subconsulta.
-
 ```sql
 SELECT
     T.CustomerID,
@@ -36,44 +39,61 @@ FROM
 WHERE T.CustomerID = 10
 ```
 
-*  Lugares donde se pueden usar subconsultas
-    * En un filtro IN
-    ```sql
-    SELECT 
-        SalesOrderID,
-        SalesOrderDate,
-        TotalQuantity,
-        ExpiredDate,
-        CustomerID
-    FROM
-        Sales.SalesOrders SO
-    WHERE
-        CustomerID IN (SELECT CustomerID FROM Sales.Customers C WHERE CustomerID > 1);
-    ```
-    * En instrucciones UPDATE, INSERT y DELETE
-    * En filtros con operadores de comparación (mayor que, menor que, igual, etc.)
-    ```sql
-    SELECT 
-        SalesOrderID,
-        SalesOrderDate,
-        TotalQuantity,
-        ExpiredDate,
-        CustomerID
-    FROM
-        Sales.SalesOrders SO
-    WHERE 
-        TotalQuantity > (SELECT MAX(TotalQuantity) FROM Sales.SalesOrders);
-    ```
-    * Con la función NOT EXISTS | EXISTS
-    ```sql
-    SELECT 
-        SalesOrderID,
-        SalesOrderDate,
-        TotalQuantity,
-        ExpiredDate,
-        CustomerID
-    FROM
-        Sales.SalesOrders SO
-    WHERE 
-        NOT EXISTS (SELECT CustomerID FROM Sales.Customers C WHERE FirstName LIKE 'A%');
-    ```
+#### Lugares donde se pueden usar subconsultas
+
+* En un filtro IN
+```sql
+SELECT 
+    SalesOrderID,
+    SalesOrderDate,
+    TotalQuantity,
+    ExpiredDate,
+    CustomerID
+FROM
+    Sales.SalesOrders SO
+WHERE
+    CustomerID IN (SELECT CustomerID FROM Sales.Customers C WHERE CustomerID > 1);
+```
+
+* En instrucciones UPDATE, INSERT y DELETE
+
+* En filtros con operadores de comparación (mayor que, menor que, igual, etc.)
+```sql
+SELECT 
+    SalesOrderID,
+    SalesOrderDate,
+    TotalQuantity,
+    ExpiredDate,
+    CustomerID
+FROM
+    Sales.SalesOrders SO
+WHERE 
+    TotalQuantity > (SELECT MAX(TotalQuantity) FROM Sales.SalesOrders);
+```
+
+* Con la función NOT EXISTS | EXISTS
+```sql
+SELECT 
+    SalesOrderID,
+    SalesOrderDate,
+    TotalQuantity,
+    ExpiredDate,
+    CustomerID
+FROM
+    Sales.SalesOrders SO
+WHERE 
+    NOT EXISTS (SELECT CustomerID FROM Sales.Customers C WHERE FirstName LIKE 'A%');
+```
+
+* En lugar de una expresión (por ejemplo, en una instrucción SELECT)
+```sql
+SELECT 
+    SalesOrderID,
+    TotalQuantity,
+    ExpiredDate,
+    CustomerID,
+    Days = (SELECT DATEDIFF(DAY, GETDATE(), ExpiredDate)) FROM Sales.SalesOrders WHERE SalesOrderID = 2)
+FROM 
+    Sales.SalesOrders SO
+```
+
