@@ -126,12 +126,11 @@ Soluciones:
 * Acerca de la sintaxis
     * Se debe usar la palabra clave WITH para declarar la CTE
     * Un WITH no puede tener otra definición WITH anidada
+![](img/cte_syntax.png)
+
 
 * Links:
     * https://www.campusmvp.es/recursos/post/SQL-Server-Expresiones-de-tabla-comunes.aspx
-
-
-![](img/cte_syntax.png)
 
 
 ### Ejemplo de una CTE NO recursiva
@@ -160,5 +159,34 @@ FROM
 
 ### Ejemplo de CTE recursiva
 
+* Útil para navegar a través de jerarquías 
+* Nivel máximo de recursiones: 32767
 
+Ejemplo: mostrar un jefe y sus subordinados
 
+```sql
+WITH CTE_Employees AS
+(
+    SELECT 
+        EmployeeID, 
+        ManagerID, 
+        FirstName, 
+        LastName, 
+        1 as Pos
+    FROM HR.Employees 
+    WHERE EmployeeID = 10
+
+    UNION ALL
+
+    SELECT 
+        E.EmployeeID, 
+        E.ManagerID, 
+        E.FirstName, 
+        E.LastName, 
+        (C.Pos + 1) as Pos
+    FROM HR.Employees E
+    INNER JOIN CTE_Employees C ON E.ManagerID = C.EmployeeID
+)
+
+SELECT * FROM CTE_Employees
+```
