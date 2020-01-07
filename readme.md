@@ -97,3 +97,68 @@ FROM
     Sales.SalesOrders SO
 ```
 
+
+### Rendimiento en subconsultas
+
+Como cada FROM+JOIN crea un producto cartesiano entre tablas, el uso de subconsultas es una buena práctica para mejorar el rendimiento de la ejecución.
+
+```
+Caso práctico
+Tenemos:
+    tabla maestra --> Sales.SalesOrders
+    tabla de detalles --> Sales.SalesOrderDetails
+
+Se pide:
+leer un cierto número de pedidos con sus detalles para un intervalo de tiempo
+
+Soluciones:
+    una instrucciòn SELECT con un JOIN para enlazar las tablas utilizando la columna SalesOrderId
+
+    uso de subconsultas para filtrar registros maestros antes de unirlos con las otras tablas de detalle
+```
+
+## Common Table Expressions (CTE)
+
+* Ventajas
+    * modularidad
+    * facilidad de mantenimiento
+    * pueden definirse en rutinas
+* Acerca de la sintaxis
+    * Se debe usar la palabra clave WITH para declarar la CTE
+    * Un WITH no puede tener otra definición WITH anidada
+
+* Links:
+    * https://www.campusmvp.es/recursos/post/SQL-Server-Expresiones-de-tabla-comunes.aspx
+
+
+![](img/cte_syntax.png)
+
+
+### Ejemplo de una CTE NO recursiva
+
+```sql
+WITH CustomersCTE (CustomerName, Quantity, ID)
+AS
+(
+    SELECT DISTINCT
+        C.FirstName + ' ' + C.LastName,
+        SO.TotalQuantity,
+        C.CustomerID
+    FROM
+        Sales.Customers C
+    JOIN 
+        Sales.SalesOrders SO ON C.CustomerID = SO.CustomerID
+)
+
+SELECT 
+    CustomerName,
+    Quantity,
+    ID
+FROM
+    CustomersCTE
+```
+
+### Ejemplo de CTE recursiva
+
+
+
