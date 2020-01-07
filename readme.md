@@ -1,16 +1,14 @@
-# SQL
+# Introducción a SQL
 
-## Introducción a SQL
+# Instrucciones DML
 
-## Instrucciones DML
+# Consultas y subconsultas
 
-## Consultas y subconsultas
-
-### ¿Qué es una consulta?
+## ¿Qué es una consulta?
 
 A query is a question or inquiry to a set of data. We use SQL, or Structured Query Language, to retrieve data from databases.
 
-### ¿Cómo funciona una consulta?
+## ¿Cómo funciona una consulta?
 
 La lógica que sigue el motor para el procesado de consultas es la siguiente:
 
@@ -20,7 +18,7 @@ La lógica que sigue el motor para el procesado de consultas es la siguiente:
 
 Cada paso genera una **tabla virtual** que se usa para el paso siguiente.
 
-### ¿Qué es una subconsulta?
+## ¿Qué es una subconsulta?
 
 Es una consulta anidada que es parte de otra instrucción SELECT, INSERT, UPDATE, DELETE o bien otra subconsulta.
 ```sql
@@ -39,7 +37,7 @@ FROM
 WHERE T.CustomerID = 10
 ```
 
-#### Lugares donde se pueden usar subconsultas
+### Lugares donde se pueden usar subconsultas
 
 En un filtro IN
 ```sql
