@@ -1,14 +1,21 @@
-# Introducción a SQL
 
-# Instrucciones DML
+# MODULO 1: Trabajando con objetos de bases de datos
 
-# Consultas y subconsultas
+próximamente
 
-## ¿Qué es una consulta?
+# MODULO 2: T-SQL y programabilidad de bases de datos
+
+## Instrucciones DML
+
+próximamente
+
+## Consultas y subconsultas
+
+### ¿Qué es una consulta?
 
 A query is a question or inquiry to a set of data. We use SQL, or Structured Query Language, to retrieve data from databases.
 
-## ¿Cómo funciona una consulta?
+### ¿Cómo funciona una consulta?
 
 La lógica que sigue el motor para el procesado de consultas es la siguiente:
 
@@ -18,7 +25,7 @@ La lógica que sigue el motor para el procesado de consultas es la siguiente:
 
 Cada paso genera una **tabla virtual** que se usa para el paso siguiente.
 
-## ¿Qué es una subconsulta?
+### ¿Qué es una subconsulta?
 
 Es una consulta anidada que es parte de otra instrucción SELECT, INSERT, UPDATE, DELETE o bien otra subconsulta.
 ```sql
@@ -37,7 +44,7 @@ FROM
 WHERE T.CustomerID = 10
 ```
 
-### Lugares donde se pueden usar subconsultas
+#### Lugares donde se pueden usar subconsultas
 
 En un filtro IN
 ```sql
@@ -98,7 +105,7 @@ FROM
 ```
 
 
-### Rendimiento en subconsultas
+#### Rendimiento en subconsultas
 
 Como cada FROM+JOIN crea un producto cartesiano entre tablas, el uso de subconsultas es una buena práctica para mejorar el rendimiento de la ejecución.
 
@@ -117,7 +124,7 @@ Soluciones:
     uso de subconsultas para filtrar registros maestros antes de unirlos con las otras tablas de detalle
 ```
 
-## Common Table Expressions (CTE)
+### Common Table Expressions (CTE)
 
 * Ventajas
     * modularidad
@@ -133,7 +140,7 @@ Soluciones:
     * https://www.campusmvp.es/recursos/post/SQL-Server-Expresiones-de-tabla-comunes.aspx
 
 
-### Ejemplo de una CTE NO recursiva
+#### Ejemplo de una CTE NO recursiva
 
 ```sql
 WITH CustomersCTE (CustomerName, Quantity, ID)
@@ -157,7 +164,7 @@ FROM
     CustomersCTE
 ```
 
-### Ejemplo de CTE recursiva
+#### Ejemplo de CTE recursiva
 
 * Útil para navegar a través de jerarquías 
 * Nivel máximo de recursiones: 32767
@@ -190,3 +197,20 @@ WITH CTE_Employees AS
 
 SELECT * FROM CTE_Employees
 ```
+
+
+# MODULO 3: Trabajando con índices
+
+próximamente
+
+# MODULO 4: Trabajando con transacciones
+
+próximamente
+
+# MODULO 5: Seguridad de SQL Server
+
+próximamente
+
+# MODULO 6: Supervisión y solución de problemas
+
+próximamente
