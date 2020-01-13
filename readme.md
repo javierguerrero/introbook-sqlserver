@@ -230,9 +230,10 @@ FROM
 
 Formas de extender el cojunto de columnas:
 * columnas calculadas condicionales
-* usando funciones de categoría: 
+* usando funciones de categoría: funciones útiles para enumerar registros, pero también para examinar la calidad de datos.
     * RANK()
     * ROW_NUMBER()
+        * http://bit.ly/2TkxfRP
     * DENSE_RANK()
     * NTILE(n)
 * usando funciones analíticas
@@ -244,6 +245,36 @@ Formas de extender el cojunto de columnas:
     * PERCENTILE_RANK()
     * FIRST_VALUE()
     * LAST_VALUE()
+
+Identificar los registros dobles
+```sql
+SELECT 
+	IDMultiValue, 
+	SampleValue, 
+	SampleDescription,
+	repeat_number = ROW_NUMBER() OVER (PARTITION BY IDMultiValue ORDER BY IDMultiValue)
+FROM dbo.MultiValues
+```
+
+Cómo usar una CTE para eliminar registros duplicados
+```sql
+--recopila los valores repetidos
+WITH MultiCTE AS
+(
+	SELECT 
+		IDMultiValue,
+		SampleValue,
+		SampleDescription,
+		repeat_number = ROW_NUMBER() OVER (PARTITION BY IDMultiValue ORDER BY IDMultiValue)
+	FROM 
+		dbo.MultiValues
+)
+
+--borrar la instrucción con la CTE
+DELETE FROM MultiCTE WHERE repeat_number > 1
+```
+
+> **Nota:** Una expresión es determinista si esta devuelve siempre el mismo resultado para un conjunto de entrada. La función GETDATE() no es determinista.
 
 
 ### Enlazar tablas con operadores JOIN o APPLY
