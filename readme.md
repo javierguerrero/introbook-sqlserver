@@ -198,6 +198,62 @@ WITH CTE_Employees AS
 SELECT * FROM CTE_Employees
 ```
 
+## Extendiendo conjunto de resultados
+
+Hay muchas maneras de extender resultados:
+
+* Añadir columnas calculadas
+* Enlazar tablas con operadores JOIN o APPLY
+* Combinar resultados con operador UNION 
+
+### Añadir columnas calculadas
+
+Las columnas calculadas constituyen el resultado de una expresión. Las columnas calculadas se pueden usar en:
+* la lista de SELECT
+* cláusula WHERE
+* cláusula ORDER BY
+
+Ejemplo que muestra como añadir una expresión a la lista de SELECT para extender el conjunto de columnas:
+
+```sql
+SELECT 
+    SOD.SalesOrderID,
+    SOD.OrderNumber,
+    SOD.Quantity,
+    SOD.Price,
+    ItemTotalPrice = SOD.Quantity * SOD.Price
+FROM
+    Sales.SalesOrderDetails SOD
+```
+
+> **Performance tip:** Normalmente, una columna calculada es un campo virtual que no persiste en la base de datos. Sin embargo, una razón para persistir una **columna calculada** es si tenemos que aplicarle un filtro (WHERE), también con el fin de permitir al diseñador crear un índice para acelerar las búsquedas.
+
+Formas de extender el cojunto de columnas:
+* columnas calculadas condicionales
+* usando funciones de categoría: 
+    * RANK()
+    * ROW_NUMBER()
+    * DENSE_RANK()
+    * NTILE(n)
+* usando funciones analíticas
+    * CUME_DIST()
+    * LAG()
+    * LEAD()
+    * PERCENTILE_CONT()
+    * PERCENTILE_DISC()
+    * PERCENTILE_RANK()
+    * FIRST_VALUE()
+    * LAST_VALUE()
+
+
+### Enlazar tablas con operadores JOIN o APPLY
+
+* 
+
+### Combinar resultados con operador UNION 
+
+
+
 
 # MODULO 3: Trabajando con índices
 
