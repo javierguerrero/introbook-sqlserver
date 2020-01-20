@@ -203,8 +203,8 @@ SELECT * FROM CTE_Employees
 Hay muchas maneras de extender resultados:
 
 * Añadir columnas calculadas
-* Enlazar tablas con operadores JOIN o APPLY
-* Combinar resultados con operador UNION 
+* Relacionar tablas: operadores JOIN o APPLY
+* Añadir filas: operador UNION 
 
 ### Añadir columnas calculadas
 
@@ -277,13 +277,152 @@ DELETE FROM MultiCTE WHERE repeat_number > 1
 > **Nota:** Una expresión es determinista si esta devuelve siempre el mismo resultado para un conjunto de entrada. La función GETDATE() no es determinista.
 
 
-### Enlazar tablas con operadores JOIN o APPLY
+### Relacionar tablas: operadores JOIN o APPLY
 
-* 
+* El operador JOIN nos permite hacer combinaciones lógicas entre tablas
+* Podemos hacer la operación JOIN con más de 2 tablas
+* Normalmente, las relaciones se establecen entre la clave principal de una tabla y la clave externa correspondiente
+* Each join type specifies how SQL Server uses data from one table to select rows in another table.
+* Tipos de JOIN
+    * INNER JOIN
+        * También se puede usar la palabra JOIN
+    * OUTER JOIN
+        * LEFT OUTER JOIN = LEFT JOIN
+        * RIGHT OUTER JOIN = RIGTH JOIN
+        * FULL OUTER JOIN = FULL JOIN
+    * CROSS JOIN
+        * Productos cartesianos
+        * No necesita ninguna cláusula ON ya que no hay ninguna clave de coincidencia
+* Operador APPLY
+    * to perform join operations between a physical table and table valued function
+    * permite invocar por cada fila de una consulta una **función que devuelva un tipo tabla**. En otras palabras, hace una proyección de la expresión izquierda a través de la función (o expresión de tipo tabla) que se le indica.
+    * Tipos
+        * CROSS APPLY: parecido a INNER JOIN
+        * OUTER APPLY: parecido a LEFT JOIN
+    * https://www.sqlshack.com/the-difference-between-cross-apply-and-outer-apply-in-sql-server/
 
-### Combinar resultados con operador UNION 
 
 
+
+```sql
+-- Crear tabla A (tabla Izquierda)
+CREATE TABLE A
+(
+a INT
+);
+
+-- Crear tabla B (tabla derecha)
+CREATE TABLE B
+(
+b INT
+);
+
+-- Insertar datos
+Insert into A (a) Values (1);
+Insert into A (a) Values (2);
+Insert into A (a) Values (3);
+Insert into A (a) Values (4);
+Insert into B (b) Values (3);
+Insert into B (b) Values (4);
+Insert into B (b) Values (5);
+Insert into B (b) Values (6);
+GO
+
+-- Tabla A
+SELECT * FROM A;
+
+-- Tabla B
+SELECT * FROM B;
+
+/* Inner Join. */
+-- Unión interna, filas que ambas tablas tienen en común.
+select * from A INNER JOIN B on A.a = B.b;
+
+/* Left outer join */
+-- Unión externa por la izquierda, todas las filas de A (tabla izquierda) relacionadas con B, así estas tengan o no coincidencias.
+select * from A LEFT OUTER JOIN B on A.a = B.b;
+
+/* Right outer join */
+-- Unión externa por la derecha, todas las filas de B (tabla derecha), así estas tengan o no coincidencias con A.
+select * from A RIGHT OUTER JOIN B on A.a = B.b;
+
+/* Full outer join */
+-- Unión externa completa, unión externa por la izquierda unida a unión externa por la derecha. 
+select * from A FULL OUTER JOIN B on A.a = B.b;
+
+/* Cross join*/
+select * from A CROSS JOIN B
+```
+
+Links:
+* https://www.sqlservertutorial.net/sql-server-basics/sql-server-joins/
+
+
+### Añadir filas: operador UNION 
+
+* El número de columnas no cambia
+* Reglas para usar el operador UNION
+    * El número y orden de las columnas de todas las consultas deben ser el mismo
+    * Los tipos de dato de cada columna deben ser compatibles con los del conjunto de datos añadido
+* Es posible que haya duplicados en las filas
+    * UNION --> elimina duplicados
+    * UNION ALL --> para mantener filas repetidas
+* Se puede usar ORDER BY al final de los conjuntos de datos combinados
+
+```sql
+USE tempdb;
+GO
+-- primer conjunto
+CREATE TABLE #FirstSet (id int, val varchar(10));
+
+-- segundo conjunto
+CREATE TABLE #SecondSet (id int, val varchar(10), number smallint);
+
+-- tercer conjunto
+CREATE TABLE #ThirdSet (id int, number smallint);
+
+-- INSERT VALUES
+-- ///////////////////////////////////////////
+INSERT INTO #FirstSet ( id, val )
+VALUES
+( 1, 'ONE')
+, ( 2, 'TWO')
+, ( 3, 'THREE');
+
+INSERT INTO #SecondSet ( id, val, number )
+VALUES
+( 3, 'THREE', 300 )
+, ( 4, 'FOUR', 400 )
+, ( 5, 'FIVE', 500 );
+
+INSERT INTO #ThirdSet ( id, number )
+VALUES
+( 2, 200 )
+, ( 3, 300 )
+, ( 4, 500 );
+-- ///////////////////////////////////////////
+
+-- solo UNION (sin duplicados)
+SELECT id, val FROM #FirstSet
+
+UNION
+
+SELECT id, val FROM #SecondSet
+
+UNION
+
+SELECT id, val = CASE
+					WHEN id = 2 THEN 'TWO'
+					WHEN id = 3 THEN 'THREE'
+					WHEN id = 4 THEN 'FOUR'
+				END
+FROM #ThirdSet;
+
+DROP TABLE #FirstSet;
+DROP TABLE #SecondSet;
+DROP TABLE #ThirdSet;
+GO
+```
 
 
 # MODULO 3: Trabajando con índices
