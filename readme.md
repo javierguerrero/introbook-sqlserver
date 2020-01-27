@@ -301,9 +301,6 @@ DELETE FROM MultiCTE WHERE repeat_number > 1
         * OUTER APPLY: parecido a LEFT JOIN
     * https://www.sqlshack.com/the-difference-between-cross-apply-and-outer-apply-in-sql-server/
 
-
-
-
 ```sql
 -- Crear tabla A (tabla Izquierda)
 CREATE TABLE A
@@ -423,6 +420,161 @@ DROP TABLE #SecondSet;
 DROP TABLE #ThirdSet;
 GO
 ```
+
+## Objetos temporales
+
+* Base de datos para objetos temporales: tempdb
+* Se recomienda que tempdb sea una BD separada físicamente en RAID
+*  Creación de objetos temporales
+    * '#' --> tabla temporal local
+    * '@' --> variable de tabla
+
+### Tablas temporales locales
+
+* visibles para su creador durante una misma conexión
+* Se borran automáticamente una vez que el creador se desconecta de la instancia
+
+```sql
+USE tempdb;
+GO
+
+CREATE TABLE #FirstSet (id int, val varchar(10));
+GO
+
+DROP TABLE #FirstSet;
+GO
+```
+
+### Tablas temporales globales
+
+* Visible para cualquier usuario
+* Se borrarn cuando todos los usuarios que están referenciándola se desconectan de la instancia
+* Ojo con el DROP TABLE porque estas tablas son de ámbito global (evitar usarlas)
+
+```sql
+USE tempdb;
+GO
+
+CREATE TABLE ##FirstSet (id int, val varchar(10));
+GO    
+```
+
+### Variables de tabla
+* Cuando hay poca memoria libre se almacenan en tempdb, sino en memoria
+* Podemos:
+    * En SP: pasarle datos en forma de variable de tabla
+    * En funciones: devolver variable tabla
+
+```sql
+DECLARE <table_name> TABLE (<column_definition>);
+```
+
+### Ventajas/desventajas de usar tablas temporales
+
+* Ventajas
+    * la división de los datos paso a paso para mejorar las consultas grandes (optimización)
+    * los objetos se autodestruyen
+    * ...
+
+* Desventajas
+    * se crea una tabla temporal local para cada usuario
+    * pueden crear un cuello de botella en la entrada y salida dentro tempdb
+
+
+Ejemplo de como dividir una consulta en varias tablas. Vamos a intentar minizar los productos cartesianos
+
+```sql
+
+--consulta original
+select 
+	H.DueDate,
+	H.Comment,
+	A.AddressLine1,
+	A.AddressLine2,
+	A.City,
+	PR.FirstName,
+	PR.LastName,
+	D.UnitPrice,
+	D.UnitPriceDiscount,
+	SUM(D.UnitPrice) as TotalPrice
+from Sales.SalesOrderHeader H
+	join Sales.SalesOrderDetail D on H.SalesOrderID = D.SalesOrderID
+	join Production.Product P on D.ProductID = P.ProductID
+	left join Sales.Customer C on H.CustomerID = C.CustomerID
+	left join Person.Person PR on C.PersonID = PR.BusinessEntityID
+	left join Person.Address A on A.AddressID = H.BillToAddressID
+where 
+	H.ModifiedDate >= '20010101'
+	and P.SellEndDate >= '20010101'
+	and PR.LastName like 'a%'
+group by
+	H.DueDate,
+	H.Comment,
+	A.AddressLine1,
+	A.AddressLine2,
+	A.City,
+	PR.FirstName,
+	PR.LastName,
+	D.UnitPrice,
+	D.UnitPriceDiscount
+
+--consulta optimizada
+declare @TempOrders table ( -- declaro una variable de tipo tabla
+	DueDate datetime,
+	Comment nvarchar(128),
+	UnitPrice money, 
+	UnitPriceDiscount money,
+	ProductID int, 
+	CustomerID int, 
+	BillToAddressID int
+);
+
+select 
+	H.DueDate,
+	H.Comment,
+	D.UnitPrice,
+	D.UnitPriceDiscount,
+	D.ProductID,
+	H.CustomerID,
+	H.BillToAddressID
+from Sales.SalesOrderHeader H
+	join Sales.SalesOrderDetail D on H.SalesOrderID = D.SalesOrderID
+where H.ModifiedDate >= '20010101'
+
+
+select 
+	TMP.DueDate,
+	TMP.Comment,
+	A.AddressLine1,
+	A.AddressLine2,
+	A.City,
+	PR.FirstName,
+	PR.LastName,
+	TMP.UnitPrice,
+	TMP.UnitPriceDiscount,
+	SUM(TMP.UnitPrice) as TotalPrice
+from @TempOrders TMP
+	join Production.Product P on TMP.ProductID = P.ProductID
+	left join Sales.Customer C on TMP.CustomerID = C.CustomerID
+	left join Person.Person PR on C.PersonID = PR.BusinessEntityID
+	left join Person.Address A on A.AddressID = TMP.BillToAddressID
+where 
+	P.SellEndDate >= '20010101'
+	and PR.LastName like 'a%'
+group by
+	TMP.DueDate,
+	TMP.Comment,
+	A.AddressLine1,
+	A.AddressLine2,
+	A.City,
+	PR.FirstName,
+	PR.LastName,
+	TMP.UnitPrice,
+	TMP.UnitPriceDiscount
+
+```
+
+
 
 
 # MODULO 3: Trabajando con índices
