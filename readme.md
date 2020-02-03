@@ -5,7 +5,7 @@ próximamente
 
 # MODULO 2: T-SQL y programabilidad de bases de datos
 
-## Instrucciones DML
+## Instrucciones DDL y DML
 
 próximamente
 
@@ -484,7 +484,6 @@ DECLARE <table_name> TABLE (<column_definition>);
 Ejemplo de como dividir una consulta en varias tablas. Vamos a intentar minizar los productos cartesianos
 
 ```sql
-
 --consulta original
 select 
 	H.DueDate,
@@ -574,21 +573,216 @@ group by
 
 ```
 
+## Programabilidad  con T-SQL
+
+Constructores básicos para la programación en BD
+* Instrucciones básicas: condicionales, bucles, saltos
+* Variables
+* SQL dinámico
+* Gestión de errores
 
 
+### Instrucciones básicas
 
-# MODULO 3: Trabajando con índices
+#### Consideraciones
+    * Cada instrucción sigue un patrón BEGIN...END para mantener un conjunto de lógica en un fragmento de código determinado.
+    * Podemos añadir el punto y coma (;) al final de las instrucciones
+    * Podemos terminar un lote utilizando la instrucción GO
+        * Lote: un conjunto de lógica atómica
+        * Todas las variables declaradas antes de GO se destruyen
 
-próximamente
+* Condiciones
+```sql
+IF DATENAME(weekday, GETDATE()) IN (N'Saturday', N'Sunday')
+       SELECT 'Weekend';
+ELSE 
+       SELECT 'Weekday';
+```
 
-# MODULO 4: Trabajando con transacciones
+#### Bucles
+```sql
+DECLARE @Counter INT 
+SET @Counter=1
+WHILE ( @Counter <= 10)
+BEGIN
+    PRINT 'The counter value is = ' + CONVERT(VARCHAR,@Counter)
+    SET @Counter  = @Counter  + 1
+END
+```
 
-próximamente
+```sql
+DECLARE @Counter INT 
+SET @Counter=1
+WHILE ( @Counter <= 10)
+BEGIN
+  PRINT 'The counter value is = ' + CONVERT(VARCHAR,@Counter)
+  IF @Counter >=7
+  BEGIN
+	BREAK
+  END
+  SET @Counter  = @Counter  + 1
+END
+```
 
-# MODULO 5: Seguridad de SQL Server
+```sql
+DECLARE @Counter INT 
+SET @Counter=1
+WHILE (@Counter <= 20)
+BEGIN
+	IF @Counter % 2 = 1
+	BEGIN
+		SET @Counter  = @Counter  + 1
+		CONTINUE
+	END
+	PRINT 'The counter value is = ' + CONVERT(VARCHAR,@Counter)
+	SET @Counter  = @Counter  + 1
+END
+```
 
-próximamente
+```sql
+--si usamos GO con un entero se crea un bucle
+SELECT 1 AS number
+GO 10
+```
 
-# MODULO 6: Supervisión y solución de problemas
+#### Saltos
+Un salto consiste en viajar a otro punto del código designado con una etiqueta (label) 
 
-próximamente
+```sql
+DECLARE @Contador int;
+SET @Contador = 1;
+WHILE @Contador < 10
+BEGIN
+	SELECT @Contador
+	IF @Contador = 4 GOTO Opcion_Uno --jumps to the first branch.
+	IF @Contador = 5 GOTO Opcion_Dos --This will never execute.
+	SET @Contador = @Contador + 1
+END
+
+Opcion_Uno:
+	SELECT 'Eligio opción uno.'
+	GOTO Salida; --Esto evitará que las opciones se ejecuten una despues de la otra
+
+Opcion_Dos:
+	SELECT 'Eligio opción dos.'
+	GOTO Salida; --Esto evitará que las opciones se ejecuten una despues de la otra
+
+Opcion_Tres:
+	SELECT 'Eligio opción tres.'
+	GOTO Salida; --Esto evitará que las opciones se ejecuten una despues de la otra
+
+Salida:
+	SELECT 'Adios'
+```
+
+### Variables
+
+Se crean dentro de:
+* un lote
+* un procedimiento almacenado
+* una función
+
+Las variables de sistema (de solo lectura) son declaradas asi: @@+nombre_variable
+* @@ROWCOUNT --> devuelve el número de filas afectadas por la última instrucción ejecutada
+
+```sql
+--declaración de variable
+DECLARE @i;
+DECLARE @s;
+
+--establecer valores
+SET @i = 1;
+SET @s = 'Hello';
+
+--otra forma de establecer valores
+SELECT @i = 1;
+SELECT @s = 'Hello';
+```
+
+### SQL dinámico
+
+* Es una consulta que se construye concatenando partes de la instrucción.
+* Podemos crear instrucciones dinámicamente (intercambiar nombres de tablas, crear filtros dinámicos, etc.).
+* EXEC command executes a stored procedure or string passed to it.
+* There is a possibility of SQL injection when you construct the SQL statement by concatenating strings from user input values.
+```sql
+DECLARE @SQL nvarchar(1000);
+DECLARE @Pid varchar(50);
+SET @Pid = '680';
+SET @SQL = 'SELECT ProductID, Name, ProductNumber FROM Production.Product Where ProductID = '+ @Pid
+EXEC (@SQL)
+```
+
+* El SQL dinámico es importante cuando tenemos que pasar consultas dinámicas desde la capa de aplicación.
+* Formas de pasar una cadena de SQL a SQL Server
+    * Crear la cadena en la capa de aplicación y pasársela a SQL Server
+    * Usar consultas paramétrica (con marcadores de posición @variable)
+    * Usar la API proporcionada por los lenguaje de programación (LINQ, por ejemplo)
+    * Usar SPs con definición de SQL estático
+    * Usar SPs con SQL dinámico
+        * sp_ExecuteSQL
+
+https://www.sqlshack.com/dynamic-sql-in-sql-server
+
+### Gestión de errores
+
+Formas de gestionar errores en T-SQL
+* Examinar el valor de la variable de sistema @@ERROR
+* Usar la instrucción TRY...CATCH
+
+#### @@ERROR
+* Variable global que duelve 0 si la instrucción anterior no ha generado errores
+* Este valor cambia para cada intrucción de un lote, por lo que tenemos que guardarlo en una variable local si queremos conservar la información sobre el error
+
+```sql
+USE tempdb
+GO
+
+CREATE TABLE #FooData (id int NOT NULL);
+DECLARE @value int; 
+
+INSERT #FooData VALUES (@value)
+IF @@ERROR <> 0
+	PRINT 'Error inserting data!'
+```
+
+#### TRY...CATCH
+```sql 
+BEGIN TRY
+	DECLARE @s smallint = CAST (11111111 as smallint);
+END TRY
+BEGIN CATCH
+	SELECT 
+		 ErrorNumber = ERROR_NUMBER()
+		,ErrorMessage = ERROR_MESSAGE()
+		,ErrorLine = ERROR_LINE()
+		,ErrorSeverity = ERROR_SEVERITY()
+END CATCH
+```
+
+Podemo usar la instrucción THROW para enviar la excepción al llamador. En las versiones previas a SQL Server 2012 sólo podíamos usar la función RAISEERROR.
+
+```sql
+THROW 55000, 'Error!', 1;
+```
+El error_number debe ser mayor a 50 000 qeu es el umbral por debajo del que SQL Server almacena mensajes de error para uso interno.
+
+```sql
+--Using THROW statement to rethrow an exception
+CREATE TABLE #t1(
+    id int primary key
+);
+GO
+
+BEGIN TRY
+    INSERT INTO #t1(id) VALUES(1);
+    --cause error
+    INSERT INTO #t1(id) VALUES(1);
+END TRY
+BEGIN CATCH
+    PRINT('Raise the caught error again');
+    THROW;
+END CATCH
+```
+In this example, the first INSERT statement succeeded. However, the second one failed due to the primary key constraint. Therefore, the error was caught by the CATCH block was raised again by the THROW statement.
+
