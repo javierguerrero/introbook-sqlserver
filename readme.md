@@ -3,11 +3,13 @@
 
 próximamente
 
+<hr />
+
 # MODULO 2: T-SQL y programabilidad de bases de datos
 
 ## Instrucciones DDL y DML
 
-próximamente
+próximamente...
 
 ## Consultas y subconsultas
 
@@ -575,23 +577,23 @@ group by
 
 ## Programabilidad  con T-SQL
 
-Constructores básicos para la programación en BD
+Constructores básicos para la programación de base de datos en SQL Server
 * Instrucciones básicas: condicionales, bucles, saltos
 * Variables
 * SQL dinámico
 * Gestión de errores
 
-
 ### Instrucciones básicas
 
 #### Consideraciones
-    * Cada instrucción sigue un patrón BEGIN...END para mantener un conjunto de lógica en un fragmento de código determinado.
-    * Podemos añadir el punto y coma (;) al final de las instrucciones
-    * Podemos terminar un lote utilizando la instrucción GO
-        * Lote: un conjunto de lógica atómica
-        * Todas las variables declaradas antes de GO se destruyen
+* Cada instrucción sigue un patrón BEGIN...END para mantener un conjunto de lógica en un fragmento de código determinado.
+* Podemos añadir el punto y coma (;) al final de las instrucciones
+* Podemos terminar un lote utilizando la instrucción GO
+    * Lote: un conjunto de lógica atómica
+    * Todas las variables declaradas antes de GO se destruyen
 
-* Condiciones
+#### Condiciones
+
 ```sql
 IF DATENAME(weekday, GETDATE()) IN (N'Saturday', N'Sunday')
        SELECT 'Weekend';
@@ -603,7 +605,7 @@ ELSE
 ```sql
 DECLARE @Counter INT 
 SET @Counter=1
-WHILE ( @Counter <= 10)
+WHILE (@Counter <= 10)
 BEGIN
     PRINT 'The counter value is = ' + CONVERT(VARCHAR,@Counter)
     SET @Counter  = @Counter  + 1
@@ -613,7 +615,7 @@ END
 ```sql
 DECLARE @Counter INT 
 SET @Counter=1
-WHILE ( @Counter <= 10)
+WHILE (@Counter <= 10)
 BEGIN
   PRINT 'The counter value is = ' + CONVERT(VARCHAR,@Counter)
   IF @Counter >=7
@@ -675,6 +677,7 @@ Salida:
 	SELECT 'Adios'
 ```
 
+
 ### Variables
 
 Se crean dentro de:
@@ -705,6 +708,7 @@ SELECT @s = 'Hello';
 * Podemos crear instrucciones dinámicamente (intercambiar nombres de tablas, crear filtros dinámicos, etc.).
 * EXEC command executes a stored procedure or string passed to it.
 * There is a possibility of SQL injection when you construct the SQL statement by concatenating strings from user input values.
+
 ```sql
 DECLARE @SQL nvarchar(1000);
 DECLARE @Pid varchar(50);
@@ -731,8 +735,7 @@ Formas de gestionar errores en T-SQL
 * Usar la instrucción TRY...CATCH
 
 #### @@ERROR
-* Variable global que duelve 0 si la instrucción anterior no ha generado errores
-* Este valor cambia para cada intrucción de un lote, por lo que tenemos que guardarlo en una variable local si queremos conservar la información sobre el error
+Variable global que duelve 0 si la instrucción anterior no ha generado errores. Este valor cambia para cada intrucción de un lote, por lo que tenemos que guardarlo en una variable local si queremos conservar la información sobre el error
 
 ```sql
 USE tempdb
@@ -747,6 +750,7 @@ IF @@ERROR <> 0
 ```
 
 #### TRY...CATCH
+
 ```sql 
 BEGIN TRY
 	DECLARE @s smallint = CAST (11111111 as smallint);
@@ -765,7 +769,7 @@ Podemo usar la instrucción THROW para enviar la excepción al llamador. En las 
 ```sql
 THROW 55000, 'Error!', 1;
 ```
-El error_number debe ser mayor a 50 000 qeu es el umbral por debajo del que SQL Server almacena mensajes de error para uso interno.
+El parámetro `error_number` debe ser mayor a 50 000 que es el umbral por debajo del que SQL Server almacena mensajes de error para uso interno.
 
 ```sql
 --Using THROW statement to rethrow an exception
@@ -785,4 +789,130 @@ BEGIN CATCH
 END CATCH
 ```
 In this example, the first INSERT statement succeeded. However, the second one failed due to the primary key constraint. Therefore, the error was caught by the CATCH block was raised again by the THROW statement.
+
+## Qué es un procedimiento almacenado
+
+* Es un conjunto de instrucciones T-SQL
+* Los SPs pueden estar anidados
+* Tipos de SPs
+    * Definidos por el usuario (creados por el developer)
+    * Temporales (se crean en tempdb)
+    * De sistema (devuelven información de metadatos)
+    * Procedimientos CLR, heredados de un ensamblado CLR
+
+### Trabajar con parámetros
+
+Los valores que podemos pasar a un SP pueden ser: 
+* parámetros de solo entrada
+* parámetros de entrada y salida (palabra clave OUTPUT)
+* parámetros con valores de tabla (table-valued parameters o TPV). Tablas de solo lectura (palabra clave READONLY)
+
+Todo parámetro lleva un valor por defecto
+
+
+Ejemplo de SP con parámetros de entrada y salida.
+```sql
+-- Creación del SP
+USE [AdventureWorks2014]
+GO
+
+CREATE Procedure [dbo].[GetProductDetails]
+	@ProductId		INT,
+	@ProductNumber	VARCHAR(20)		OUTPUT,
+	@ListPrice		MONEY			OUTPUT
+AS
+SELECT 
+	@ProductNumber = ProductNumber,
+	@ListPrice = ListPrice
+FROM Production.Product 
+WHERE ProductID = @ProductId
+
+-- Uso del SP
+USE [AdventureWorks2014]
+GO
+
+DECLARE	@return_value int,
+		@ProductNumber varchar(20),
+		@ListPrice money
+
+EXEC	@return_value = [dbo].[GetProductDetails]
+		@ProductId = 320,
+		@ProductNumber = @ProductNumber OUTPUT,
+		@ListPrice = @ListPrice OUTPUT
+
+SELECT	@ProductNumber as N'@ProductNumber',
+		@ListPrice as N'@ListPrice'
+
+SELECT	'Return Value' = @return_value
+GO
+```
+
+
+Ejemplo de parámetros con valores de tabla (table-valued parameters o TPV).
+```sql
+-- Create Department table
+CREATE TABLE Department
+(
+    DepartmentID INT PRIMARY KEY,
+    DepartmentName VARCHAR(30)
+)
+
+-- Create a TABLE TYPE and define the table structure
+CREATE TYPE DeptType AS TABLE
+(
+    DeptId INT, 
+    DeptName VARCHAR(30)
+);
+
+-- Declare a STORED PROCEDURE that has a parameter of table type
+CREATE PROCEDURE InsertDepartment
+    @InsertDept_TVP DeptType READONLY
+AS
+INSERT INTO Department(DepartmentID,DepartmentName)
+SELECT * FROM @InsertDept_TVP;
+
+-- Declare a table type variable and reference the table type
+DECLARE @DepartmentTVP AS DeptType;
+
+-- Using the INSERT statement and occupy the variable
+INSERT INTO @DepartmentTVP(DeptId,DeptName)
+VALUES (1,'Accounts'),
+(2,'Purchase'),
+(3,'Software'),
+(4,'Stores'),
+(5,'Maarketing');
+
+-- We can now pass the variable to the procedure and Execute
+EXEC InsertDepartment @DepartmentTVP;
+
+-- Let’s see if the Data are inserted in the Department Table
+SELECT * FROM Department
+```
+
+![](img/table-type.png)
+
+
+
+Cada SP tiene un parámetro de valor de estado `@return_value`, que es el valor de estado que se devuelve automáticamente tras la ejecución del SP. Si no hay errores, `@return_value` es 0, de lo contrario es un valor entero correspondiente al error producido.
+
+
+
+
+
+
+https://blog.cloudboost.io/how-to-use-sql-output-parameters-in-stored-procedures-578e7c4ff188
+https://blog.sqlauthority.com/2008/08/31/sql-server-table-valued-parameters-in-sql-server-2008/
+
+
+
+
+
+### Crear y modificar SPs
+
+### Opciones de los SPs
+
+### Ventajas y desventajas de los SPs
+
+### Debugging SPs
+
 
