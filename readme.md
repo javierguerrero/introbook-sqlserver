@@ -895,21 +895,200 @@ SELECT * FROM Department
 
 Cada SP tiene un parámetro de valor de estado `@return_value`, que es el valor de estado que se devuelve automáticamente tras la ejecución del SP. Si no hay errores, `@return_value` es 0, de lo contrario es un valor entero correspondiente al error producido.
 
-
-
-
-
-
 https://blog.cloudboost.io/how-to-use-sql-output-parameters-in-stored-procedures-578e7c4ff188
 https://blog.sqlauthority.com/2008/08/31/sql-server-table-valued-parameters-in-sql-server-2008/
 
-
-
-
-
 ### Crear y modificar SPs
 
+Las instrucciones DDL para crear y modificar procedimientos almacenados son:
+* CREATE PROCEDURE
+* ALTER PROCEDURE
+Podemos mejorarlas con alguans palabras clave adicionales:
+* WITH RECOMPILE: para forzar que se recree el plan de ejecución para cada ejecución
+* WITH EXECUTE AS: para cambiar el contexto de seguridad de la ejecución
+* WITH ENCRYPTION: para encriptar y ofuscar instrucciones de los procedimientos alamacenados
+
+
+Ejemplos de como recompilar un SP en tiempo de ejecución
+Fuente: https://blog.sqlauthority.com/2010/02/20/sql-server-recompile-stored-procedure-at-run-time/
+```sql
+
+-- Option 1: siempre recompilar
+CREATE PROCEDURE dbo.PersonAge (@MinAge INT, @MaxAge INT)
+WITH RECOMPILE
+AS
+SELECT *
+FROM dbo.tblPerson
+WHERE Age >= @MinAge AND Age <= @MaxAge
+GO
+
+-- Option 2: recompilar sola una vez
+EXEC dbo.PersonAge 65,70 WITH RECOMPILE
+```
+
+Ejemplo de como cambiar el contexto de segeuridad la ejecución de un SP (impersonate)
+Fuente: https://www.mssqltips.com/sqlservertip/1227/granting-permission-with-the-execute-as-command-in-sql-server/
+
+```sql
+-- 1. Crear SP
+CREATE PROCEDURE dbo.usp_Demo2
+WITH EXECUTE AS OWNER
+AS
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].table_2') AND type in (N'U'))
+CREATE TABLE table_2 (id int, data nchar(10))
+INSERT INTO table_2
+SELECT top 5 * from dbo.table_1;
+GO
+
+-- 2. Dar derechos de ejecución sobre el SP
+GRANT EXEC ON dbo.usp_Demo1 TO test;
+GO
+
+-- 3. Ejecutar el SP
+EXEC dbo.usp_Demo1
+```
+
+Ejemplo de como encriptar un SP
+Fuente: https://www.c-sharpcorner.com/UploadFile/skumaar_mca/encrypt-the-stored-procedure-in-sql-server/
+
+```sql
+-- 1. Crear SP
+CREATE PROCEDURE Proc_RetrieveProducts
+WITH ENCRYPTION
+AS
+BEGIN
+    SET NOCOUNT ON
+    SELECT 
+        ProductID, 
+        ProductName, 
+        ProductVendor 
+   FROM Products
+END
+
+-- 2. Visualizar el SP en las tablas del sistemas (sobre la BD donde se creó el SP)
+select sc.id, so.name, sc.ctext, sc.text
+from SYScomments sc 
+inner join sys.objects so on so.object_id = sc.id
+
+-- 3. Tratar de visualizar esquema de SP encriptado 
+SP_HELPTEXT Proc_RetrieveProducts
+```
+
+> Once stored procedure is created then the stored procedure should be manually stored some where in the local system and it should be used for the changes.
+
 ### Opciones de los SPs
+
+NOCOUNT 
+* Si está en ON no se devolverá al llamador ningún mensaje de estado de las filas afectadas
+* A pesar que NOCOUNT esté establecida en ON, la variable de sistema @@ROWCOUNT continúa devolviendo el número correcto de las filas afectadas
+
+Ejemplo de uso de NOCOUNT
+Fuente: https://www.sqlshack.com/set-nocount-on-statement-usage-and-performance-benefits-in-sql-server/
+
+```sql
+-- 1. Crear tabla
+USE CourseDatabase;
+GO
+CREATE TABLE tblEmployeeDemo
+(
+    Id      INT
+    PRIMARY KEY, 
+    EmpName NVARCHAR(50), 
+    Gender  NVARCHAR(10),
+);
+
+-- 2. insertar registros
+USE CourseDatabase
+GO
+INSERT [dbo].[tblEmployeeDemo] ([Id], [EmpName], [Gender]) VALUES (1, N'Grace', N'Female')
+GO
+INSERT [dbo].[tblEmployeeDemo] ([Id], [EmpName], [Gender]) VALUES (2, N'Gordon', N'Male')
+GO
+INSERT [dbo].[tblEmployeeDemo] ([Id], [EmpName], [Gender]) VALUES (3, N'Jaime', N'Female')
+GO
+INSERT [dbo].[tblEmployeeDemo] ([Id], [EmpName], [Gender]) VALUES (4, N'Ruben', N'Female')
+GO
+INSERT [dbo].[tblEmployeeDemo] ([Id], [EmpName], [Gender]) VALUES (5, N'Makayla', N'Male')
+GO
+INSERT [dbo].[tblEmployeeDemo] ([Id], [EmpName], [Gender]) VALUES (6, N'Barry', N'Female')
+GO
+INSERT [dbo].[tblEmployeeDemo] ([Id], [EmpName], [Gender]) VALUES (7, N'Ramon', N'Male')
+GO
+INSERT [dbo].[tblEmployeeDemo] ([Id], [EmpName], [Gender]) VALUES (8, N'Douglas', N'Male')
+GO
+INSERT [dbo].[tblEmployeeDemo] ([Id], [EmpName], [Gender]) VALUES (9, N'Julian', N'Female')
+GO
+INSERT [dbo].[tblEmployeeDemo] ([Id], [EmpName], [Gender]) VALUES (10, N'Sarah', N'Female')
+GO
+
+-- 3. seleccionar registros
+SELECT * FROM tblEmployeeDemo;
+
+-- 4. Crear SP
+CREATE PROCEDURE SP_tblEmployeeDemo
+AS
+BEGIN
+    SELECT *
+    FROM tblEmployeeDemo;
+END;
+
+-- 5. Ejecutar SP
+Exec SP_tblEmployeeDemo
+
+
+-- 6. Execute the insert statement after enabling the NOCOUNT 
+TRUNCATE TABLE tblEmployeeDemo;
+GO
+
+SET NOCOUNT ON
+
+USE CourseDatabase
+GO
+INSERT [dbo].[tblEmployeeDemo] ([Id], [EmpName], [Gender]) VALUES (1, N'Grace', N'Female')
+GO
+INSERT [dbo].[tblEmployeeDemo] ([Id], [EmpName], [Gender]) VALUES (2, N'Gordon', N'Male')
+GO
+INSERT [dbo].[tblEmployeeDemo] ([Id], [EmpName], [Gender]) VALUES (3, N'Jaime', N'Female')
+GO
+INSERT [dbo].[tblEmployeeDemo] ([Id], [EmpName], [Gender]) VALUES (4, N'Ruben', N'Female')
+GO
+INSERT [dbo].[tblEmployeeDemo] ([Id], [EmpName], [Gender]) VALUES (5, N'Makayla', N'Male')
+GO
+INSERT [dbo].[tblEmployeeDemo] ([Id], [EmpName], [Gender]) VALUES (6, N'Barry', N'Female')
+GO
+INSERT [dbo].[tblEmployeeDemo] ([Id], [EmpName], [Gender]) VALUES (7, N'Ramon', N'Male')
+GO
+INSERT [dbo].[tblEmployeeDemo] ([Id], [EmpName], [Gender]) VALUES (8, N'Douglas', N'Male')
+GO
+INSERT [dbo].[tblEmployeeDemo] ([Id], [EmpName], [Gender]) VALUES (9, N'Julian', N'Female')
+GO
+INSERT [dbo].[tblEmployeeDemo] ([Id], [EmpName], [Gender]) VALUES (10, N'Sarah', N'Female')
+GO
+
+-- 7. Execute the Select statement with NOCOUNT ON
+SET NOCOUNT ON
+SELECT * FROM tblEmployeeDemo;
+
+-- 8. Alter the procedure and add the SET NOCOUNT statement 
+ALTER PROCEDURE SP_tblEmployeeDemo
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT * FROM tblEmployeeDemo;
+END;
+
+-- 9. 
+Exec SP_tblEmployeeDemo
+
+```
+
+WITH RESULT SETS 
+* SQL Server 2012+
+* Definir los metadatos del conjunto de resultados
+
+
+
+
 
 ### Ventajas y desventajas de los SPs
 
