@@ -676,8 +676,6 @@ Opcion_Tres:
 Salida:
 	SELECT 'Adios'
 ```
-
-
 ### Variables
 
 Se crean dentro de:
@@ -891,8 +889,6 @@ SELECT * FROM Department
 
 ![](img/table-type.png)
 
-
-
 Cada SP tiene un parámetro de valor de estado `@return_value`, que es el valor de estado que se devuelve automáticamente tras la ejecución del SP. Si no hay errores, `@return_value` es 0, de lo contrario es un valor entero correspondiente al error producido.
 
 https://blog.cloudboost.io/how-to-use-sql-output-parameters-in-stored-procedures-578e7c4ff188
@@ -1079,19 +1075,118 @@ END;
 
 -- 9. 
 Exec SP_tblEmployeeDemo
-
 ```
 
 WITH RESULT SETS 
 * SQL Server 2012+
 * Definir los metadatos del conjunto de resultados
 
-
-
-
-
 ### Ventajas y desventajas de los SPs
 
-### Debugging SPs
+Ventajas
+* Reducción del tráfico de red
+* Seguridad
+    * Evita ataques de inyección de SQL
+    * Sólo dar permiso a los PS que queremos que se ejecuten
+    * Evitar acceso directo a los objetos de BDs
+* Modularidad y facilidad de mantenimiento
+    * Reutilización de código
+* Rendimiento mejorado
+    * Los SPs se compilan justo en el momento de su creación
+    * Cuando un SP se compila se crea el plan de ejecución óptimo y queda en memoria hasta que se lo modifique.
 
+Desventajas
+* La estricta vinculación con el RDBMS
+    * Quedamos pegamos al lenguaje y motor de BD.
+* La vinculación entre la capa de aplicación y el conjunto de resultados
+    * Acoplamiento. La capa de aplicación tiene que conocer las especificaciones de salida de un módulo de SQL.
+* El uso de la lógica de negocio en los procedimientos almacenados
+    * Demasiada lógica de negocio en SPs crean "cuellos de botella"
+
+
+## Funciones personalizadas
+
+Una función SIEMPRE devuelve un resultado
+
+### Tipos de funciones
+http://microsoftsqlsecret.fullblog.com.ar/funciones-sql-server-funciones-escalares-y-funciones-con-valores-de-t.html
+
+Función escalar
+```sql
+-- Creamos la funcion con el nombre IVA
+-- Indicamos el parámetro de entrada y tipo: @cantidad money
+Create function IVA (@cantidad money)
+Returns money -- Indicamos el tipo de parámetros que retornará la función.
+as
+ -- Encapsulamos el conjunto de funciones dentro de un Begin y un end.
+Begin
+	-- Dentro de la sentencia o funcion podemos manejar variables
+	--aunque puede no ser necesario para ser más eficiente la función.
+	-- por cuestiones de ejemplo usamos la variable @resultado
+	Declare @resultado money
+	set @resultado  = @cantidad * 0.16
+	-- Cuando terminamos la función ponemos el Return
+	Return (@resultado) -- Y la variable que devolverá la función @resultado.
+end
+
+-- Llamar a la función
+Select campo_producto, campo_unidadprecio, dbo.iva(campo_unidadprecio) as iva from tabla
+```
+
+Funciones con valores de tabla
+
+```sql
+--Creamos una función que se le ingrese por parámetro el país y devuelva los clientes de ese país:
+Create function ListadoPais (@pais varchar(100))
+returns @clientes table -- Decimos que retornamos como resultado una variable de tipo tabla y la declaramos
+	(
+	customerid varchar(5), 
+	companyname varchar(50), -- Se definen las columnas que se necesiten
+	contactname varchar(100), 
+	country varchar(100)
+	)
+as
+-- Iniciamos la función. La variable tipo tabla @clientes es la que vamos a devolver como resultado de la función
+begin
+	-- Insertamos a la variable tipo tabla @clientes:
+	Insert @clientes 
+	select customerid, companyname, contactname, country 
+	from customers 
+	where country = @pais -- variable @pais de entrada en la función
+	Return
+end
+
+-- llamar a la función
+Select * from dbo.ListadoPais('Argentina')
+```
+
+Funciones con valores de tablas en línea
+```sql
+Create funcion ListadoPais2 (@pais varchar(100))
+returns table
+as
+return
+(
+	select customerid, companyname,contactname, country 
+	from customers 
+	where country = @pais
+)
+```
+
+### Limitaciones
+* No podemos cambiar el estado de la BD
+* TRY...CATCH no está permitido
+* ORDER BY no garantiza la ordenación del conjunto de resultados
+
+### Funciones integradas
+
+https://www.sqlshack.com/es/como-utilizar-las-funciones-integradas-de-sql-server-y-crear-funciones-escalares-definidas-por-el-usuario/
+
+```sql
+SELECT CHOOSE(2,'Gold','Silver','Bronze')
+```
+https://www.essentialsql.com/how-to-use-the-choose-function-with-select/
+
+
+# MODULO 3: Trabajando con índices
 
