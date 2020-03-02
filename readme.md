@@ -1190,3 +1190,52 @@ https://www.essentialsql.com/how-to-use-the-choose-function-with-select/
 
 # MODULO 3: Trabajando con índices
 
+## Acerca de los índices
+* Un índice es una estructura de datos que permite un acceso mucho más rápido a los datos.
+* Los índices nos ayudan a reducir las operaciones de entrada y salida y el consumo de recursos del sistema.
+* Si en una tabla creamos demasiados índices, se reducirá el rendimiento al escribir en ella.
+* Vista indizaad: Usar índices en vistas que empleen muchos agregados, combinaciones de tablas o ambos operadores. 
+
+```
+Con SQL Server, algunos índices se crean automáticamente. Cuando
+intentamos aplicar una clave principal o una restricción única, se crea
+automáticamente un índice único.
+```
+
+## Tipos de índices
+https://www.guru99.com/clustered-vs-non-clustered-index.html
+
+### Clustered index
+* With a clustered index the rows are stored physically on the disk in the same order as the index. Therefore, there can be only one clustered index.
+* It is generally faster to read from a clustered index if you want to get back all the columns. You do not have to go first to the index and then to the table.
+* Writing to a table with a clustered index can be slower, if there is a need to rearrange the data.
+
+![](img/clustered-index.png)
+
+Crear un clustered index
+```sql
+--Indice compuesto
+CREATE CLUSTERED INDEX IX_tblStudent_Gender_Score
+ON student(gender ASC, total_score DESC)
+```
+
+### Non-clustered index
+* With a non clustered index there is a second list that has pointers to the physical rows. You can have many non clustered indices, although each new index will increase the time it takes to write new records. 
+
+Crear un non-clustered index
+```sql
+CREATE NONCLUSTERED INDEX IX_tblStudent_Name
+ON student(name ASC)
+```
+![](img/non-clustered-index.png)
+
+### Tips
+
+recuperar todos los índices de la tabla
+```sql
+EXECUTE sp_helpindex student
+```
+
+Links
+* http://skatageri.blogspot.com/p/index.html
+* https://www.sqlshack.com/es/cual-es-la-diferencia-entre-indices-agrupados-y-no-agrupados-en-sql-server/
