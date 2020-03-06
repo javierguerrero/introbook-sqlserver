@@ -1,23 +1,38 @@
+## Tabla de contenido
 
-# MODULO 1: Trabajando con objetos de bases de datos
+- [MODULO 1: Trabajando con objetos de bases de datos](#)
+- [MODULO 2: T-SQL y programabilidad de bases de datos](#)
+    - [Introducción a SQL](#introducción-a-sql)
+    - [Instrucciones DDL y DML](#instrucciones-ddl-dml)
+    - [Consultas y subconsultas](#consultas-y-subconsultas)
+    - [Extendiendo conjunto de resultados](#extendiendo-conjunto-de-resultados)
+    - [Objetos temporales](#objetos-temporales)
+    - [Programabilidad con T-SQL](#programabilidad-con-t-sql)
+    - [Qué es un procedimiento almacenado](#que-es-un-procedimiento-almacenado)
+    - [Funciones personalizadas](#funciones-personalizadas)
+- [MODULO 3: Trabajando con índices](#)
+    - [Acerca de los índices](#acerca-de-los-índices)
+    - [Tipos de índices](#tipos-de-índices)
 
-próximamente
+## MODULO 1: Trabajando con objetos de bases de datos
 
-<hr />
+## MODULO 2: T-SQL y programabilidad de bases de datos
 
-# MODULO 2: T-SQL y programabilidad de bases de datos
+### Introducción a SQL
 
-## Instrucciones DDL y DML
+<div align="right"><small><a href="#tabla-de-contenido">volver al inicio</a></small></div>
 
-próximamente...
+### Instrucciones DDL y DML
 
-## Consultas y subconsultas
+<div align="right"><small><a href="#tabla-de-contenido">volver al inicio</a></small></div>
 
-### ¿Qué es una consulta?
+### Consultas y subconsultas
+
+¿Qué es una consulta?
 
 A query is a question or inquiry to a set of data. We use SQL, or Structured Query Language, to retrieve data from databases.
 
-### ¿Cómo funciona una consulta?
+¿Cómo funciona una consulta?
 
 La lógica que sigue el motor para el procesado de consultas es la siguiente:
 
@@ -27,7 +42,7 @@ La lógica que sigue el motor para el procesado de consultas es la siguiente:
 
 Cada paso genera una **tabla virtual** que se usa para el paso siguiente.
 
-### ¿Qué es una subconsulta?
+¿Qué es una subconsulta?
 
 Es una consulta anidada que es parte de otra instrucción SELECT, INSERT, UPDATE, DELETE o bien otra subconsulta.
 ```sql
@@ -46,7 +61,7 @@ FROM
 WHERE T.CustomerID = 10
 ```
 
-#### Lugares donde se pueden usar subconsultas
+Lugares donde se pueden usar subconsultas
 
 En un filtro IN
 ```sql
@@ -107,7 +122,7 @@ FROM
 ```
 
 
-#### Rendimiento en subconsultas
+Rendimiento en subconsultas
 
 Como cada FROM+JOIN crea un producto cartesiano entre tablas, el uso de subconsultas es una buena práctica para mejorar el rendimiento de la ejecución.
 
@@ -126,7 +141,7 @@ Soluciones:
     uso de subconsultas para filtrar registros maestros antes de unirlos con las otras tablas de detalle
 ```
 
-### Common Table Expressions (CTE)
+Common Table Expressions (CTE)
 
 * Ventajas
     * modularidad
@@ -142,7 +157,7 @@ Soluciones:
     * https://www.campusmvp.es/recursos/post/SQL-Server-Expresiones-de-tabla-comunes.aspx
 
 
-#### Ejemplo de una CTE NO recursiva
+Ejemplo de una CTE NO recursiva
 
 ```sql
 WITH CustomersCTE (CustomerName, Quantity, ID)
@@ -166,7 +181,7 @@ FROM
     CustomersCTE
 ```
 
-#### Ejemplo de CTE recursiva
+Ejemplo de CTE recursiva
 
 * Útil para navegar a través de jerarquías 
 * Nivel máximo de recursiones: 32767
@@ -199,8 +214,9 @@ WITH CTE_Employees AS
 
 SELECT * FROM CTE_Employees
 ```
+<div align="right"><small><a href="#tabla-de-contenido">volver al inicio</a></small></div>
 
-## Extendiendo conjunto de resultados
+### Extendiendo conjunto de resultados
 
 Hay muchas maneras de extender resultados:
 
@@ -208,7 +224,7 @@ Hay muchas maneras de extender resultados:
 * Relacionar tablas: operadores JOIN o APPLY
 * Añadir filas: operador UNION 
 
-### Añadir columnas calculadas
+Añadir columnas calculadas
 
 Las columnas calculadas constituyen el resultado de una expresión. Las columnas calculadas se pueden usar en:
 * la lista de SELECT
@@ -278,8 +294,7 @@ DELETE FROM MultiCTE WHERE repeat_number > 1
 
 > **Nota:** Una expresión es determinista si esta devuelve siempre el mismo resultado para un conjunto de entrada. La función GETDATE() no es determinista.
 
-
-### Relacionar tablas: operadores JOIN o APPLY
+Relacionar tablas: operadores JOIN o APPLY
 
 * El operador JOIN nos permite hacer combinaciones lógicas entre tablas
 * Podemos hacer la operación JOIN con más de 2 tablas
@@ -357,7 +372,7 @@ Links:
 * https://www.sqlservertutorial.net/sql-server-basics/sql-server-joins/
 
 
-### Añadir filas: operador UNION 
+Añadir filas: operador UNION 
 
 * El número de columnas no cambia
 * Reglas para usar el operador UNION
@@ -423,7 +438,9 @@ DROP TABLE #ThirdSet;
 GO
 ```
 
-## Objetos temporales
+<div align="right"><small><a href="#tabla-de-contenido">volver al inicio</a></small></div>
+
+### Objetos temporales
 
 * Base de datos para objetos temporales: tempdb
 * Se recomienda que tempdb sea una BD separada físicamente en RAID
@@ -431,7 +448,7 @@ GO
     * '#' --> tabla temporal local
     * '@' --> variable de tabla
 
-### Tablas temporales locales
+Tablas temporales locales
 
 * visibles para su creador durante una misma conexión
 * Se borran automáticamente una vez que el creador se desconecta de la instancia
@@ -447,7 +464,7 @@ DROP TABLE #FirstSet;
 GO
 ```
 
-### Tablas temporales globales
+Tablas temporales globales
 
 * Visible para cualquier usuario
 * Se borrarn cuando todos los usuarios que están referenciándola se desconectan de la instancia
@@ -461,7 +478,7 @@ CREATE TABLE ##FirstSet (id int, val varchar(10));
 GO    
 ```
 
-### Variables de tabla
+Variables de tabla
 * Cuando hay poca memoria libre se almacenan en tempdb, sino en memoria
 * Podemos:
     * En SP: pasarle datos en forma de variable de tabla
@@ -471,7 +488,7 @@ GO
 DECLARE <table_name> TABLE (<column_definition>);
 ```
 
-### Ventajas/desventajas de usar tablas temporales
+Ventajas/desventajas de usar tablas temporales
 
 * Ventajas
     * la división de los datos paso a paso para mejorar las consultas grandes (optimización)
@@ -572,10 +589,11 @@ group by
 	PR.LastName,
 	TMP.UnitPrice,
 	TMP.UnitPriceDiscount
-
 ```
 
-## Programabilidad  con T-SQL
+<div align="right"><small><a href="#tabla-de-contenido">volver al inicio</a></small></div>
+
+### Programabilidad con T-SQL
 
 Constructores básicos para la programación de base de datos en SQL Server
 * Instrucciones básicas: condicionales, bucles, saltos
@@ -583,16 +601,15 @@ Constructores básicos para la programación de base de datos en SQL Server
 * SQL dinámico
 * Gestión de errores
 
-### Instrucciones básicas
-
-#### Consideraciones
+Instrucciones básicas
+Consideraciones
 * Cada instrucción sigue un patrón BEGIN...END para mantener un conjunto de lógica en un fragmento de código determinado.
 * Podemos añadir el punto y coma (;) al final de las instrucciones
 * Podemos terminar un lote utilizando la instrucción GO
     * Lote: un conjunto de lógica atómica
     * Todas las variables declaradas antes de GO se destruyen
 
-#### Condiciones
+Condiciones
 
 ```sql
 IF DATENAME(weekday, GETDATE()) IN (N'Saturday', N'Sunday')
@@ -601,7 +618,7 @@ ELSE
        SELECT 'Weekday';
 ```
 
-#### Bucles
+Bucles
 ```sql
 DECLARE @Counter INT 
 SET @Counter=1
@@ -647,7 +664,7 @@ SELECT 1 AS number
 GO 10
 ```
 
-#### Saltos
+Saltos
 Un salto consiste en viajar a otro punto del código designado con una etiqueta (label) 
 
 ```sql
@@ -676,7 +693,7 @@ Opcion_Tres:
 Salida:
 	SELECT 'Adios'
 ```
-### Variables
+Variables
 
 Se crean dentro de:
 * un lote
@@ -700,7 +717,7 @@ SELECT @i = 1;
 SELECT @s = 'Hello';
 ```
 
-### SQL dinámico
+SQL dinámico
 
 * Es una consulta que se construye concatenando partes de la instrucción.
 * Podemos crear instrucciones dinámicamente (intercambiar nombres de tablas, crear filtros dinámicos, etc.).
@@ -726,13 +743,13 @@ EXEC (@SQL)
 
 https://www.sqlshack.com/dynamic-sql-in-sql-server
 
-### Gestión de errores
+Gestión de errores
 
 Formas de gestionar errores en T-SQL
 * Examinar el valor de la variable de sistema @@ERROR
 * Usar la instrucción TRY...CATCH
 
-#### @@ERROR
+@@ERROR
 Variable global que duelve 0 si la instrucción anterior no ha generado errores. Este valor cambia para cada intrucción de un lote, por lo que tenemos que guardarlo en una variable local si queremos conservar la información sobre el error
 
 ```sql
@@ -747,7 +764,7 @@ IF @@ERROR <> 0
 	PRINT 'Error inserting data!'
 ```
 
-#### TRY...CATCH
+TRY...CATCH
 
 ```sql 
 BEGIN TRY
@@ -788,7 +805,9 @@ END CATCH
 ```
 In this example, the first INSERT statement succeeded. However, the second one failed due to the primary key constraint. Therefore, the error was caught by the CATCH block was raised again by the THROW statement.
 
-## Qué es un procedimiento almacenado
+<div align="right"><small><a href="#tabla-de-contenido">volver al inicio</a></small></div>
+
+### Qué es un procedimiento almacenado
 
 * Es un conjunto de instrucciones T-SQL
 * Los SPs pueden estar anidados
@@ -798,7 +817,7 @@ In this example, the first INSERT statement succeeded. However, the second one f
     * De sistema (devuelven información de metadatos)
     * Procedimientos CLR, heredados de un ensamblado CLR
 
-### Trabajar con parámetros
+Trabajar con parámetros
 
 Los valores que podemos pasar a un SP pueden ser: 
 * parámetros de solo entrada
@@ -894,7 +913,7 @@ Cada SP tiene un parámetro de valor de estado `@return_value`, que es el valor 
 https://blog.cloudboost.io/how-to-use-sql-output-parameters-in-stored-procedures-578e7c4ff188
 https://blog.sqlauthority.com/2008/08/31/sql-server-table-valued-parameters-in-sql-server-2008/
 
-### Crear y modificar SPs
+Crear y modificar SPs
 
 Las instrucciones DDL para crear y modificar procedimientos almacenados son:
 * CREATE PROCEDURE
@@ -972,7 +991,7 @@ SP_HELPTEXT Proc_RetrieveProducts
 
 > Once stored procedure is created then the stored procedure should be manually stored some where in the local system and it should be used for the changes.
 
-### Opciones de los SPs
+Opciones de los SPs
 
 NOCOUNT 
 * Si está en ON no se devolverá al llamador ningún mensaje de estado de las filas afectadas
@@ -1081,7 +1100,7 @@ WITH RESULT SETS
 * SQL Server 2012+
 * Definir los metadatos del conjunto de resultados
 
-### Ventajas y desventajas de los SPs
+Ventajas y desventajas de los SPs
 
 Ventajas
 * Reducción del tráfico de red
@@ -1104,11 +1123,11 @@ Desventajas
     * Demasiada lógica de negocio en SPs crean "cuellos de botella"
 
 
-## Funciones personalizadas
+### Funciones personalizadas
 
 Una función SIEMPRE devuelve un resultado
 
-### Tipos de funciones
+Tipos de funciones
 http://microsoftsqlsecret.fullblog.com.ar/funciones-sql-server-funciones-escalares-y-funciones-con-valores-de-t.html
 
 Función escalar
@@ -1173,12 +1192,12 @@ return
 )
 ```
 
-### Limitaciones
+Limitaciones
 * No podemos cambiar el estado de la BD
 * TRY...CATCH no está permitido
 * ORDER BY no garantiza la ordenación del conjunto de resultados
 
-### Funciones integradas
+Funciones integradas
 
 https://www.sqlshack.com/es/como-utilizar-las-funciones-integradas-de-sql-server-y-crear-funciones-escalares-definidas-por-el-usuario/
 
@@ -1188,9 +1207,11 @@ SELECT CHOOSE(2,'Gold','Silver','Bronze')
 https://www.essentialsql.com/how-to-use-the-choose-function-with-select/
 
 
-# MODULO 3: Trabajando con índices
+<div align="right"><small><a href="#tabla-de-contenido">volver al inicio</a></small></div>
 
-## Acerca de los índices
+## MODULO 3: Trabajando con índices
+
+### Acerca de los índices
 * Un índice es una estructura de datos que permite un acceso mucho más rápido a los datos.
 * Los índices nos ayudan a reducir las operaciones de entrada y salida y el consumo de recursos del sistema.
 * Si en una tabla creamos demasiados índices, se reducirá el rendimiento al escribir en ella.
@@ -1202,10 +1223,10 @@ intentamos aplicar una clave principal o una restricción única, se crea
 automáticamente un índice único.
 ```
 
-## Tipos de índices
+### Tipos de índices
 https://www.guru99.com/clustered-vs-non-clustered-index.html
 
-### Clustered index
+Clustered index
 * With a clustered index the rows are stored physically on the disk in the same order as the index. Therefore, there can be only one clustered index.
 * It is generally faster to read from a clustered index if you want to get back all the columns. You do not have to go first to the index and then to the table.
 * Writing to a table with a clustered index can be slower, if there is a need to rearrange the data.
@@ -1219,7 +1240,7 @@ CREATE CLUSTERED INDEX IX_tblStudent_Gender_Score
 ON student(gender ASC, total_score DESC)
 ```
 
-### Non-clustered index
+Non-clustered index
 * With a non clustered index there is a second list that has pointers to the physical rows. You can have many non clustered indices, although each new index will increase the time it takes to write new records. 
 
 Crear un non-clustered index
@@ -1229,7 +1250,7 @@ ON student(name ASC)
 ```
 ![](img/non-clustered-index.png)
 
-### Tips
+Tips
 
 recuperar todos los índices de la tabla
 ```sql
