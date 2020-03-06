@@ -224,7 +224,7 @@ Hay muchas maneras de extender resultados:
 * Relacionar tablas: operadores JOIN o APPLY
 * Añadir filas: operador UNION 
 
-Añadir columnas calculadas
+#### Añadir columnas calculadas
 
 Las columnas calculadas constituyen el resultado de una expresión. Las columnas calculadas se pueden usar en:
 * la lista de SELECT
@@ -294,7 +294,7 @@ DELETE FROM MultiCTE WHERE repeat_number > 1
 
 > **Nota:** Una expresión es determinista si esta devuelve siempre el mismo resultado para un conjunto de entrada. La función GETDATE() no es determinista.
 
-Relacionar tablas: operadores JOIN o APPLY
+#### Relacionar tablas: operadores JOIN o APPLY
 
 * El operador JOIN nos permite hacer combinaciones lógicas entre tablas
 * Podemos hacer la operación JOIN con más de 2 tablas
@@ -372,7 +372,7 @@ Links:
 * https://www.sqlservertutorial.net/sql-server-basics/sql-server-joins/
 
 
-Añadir filas: operador UNION 
+#### Añadir filas: operador UNION 
 
 * El número de columnas no cambia
 * Reglas para usar el operador UNION
@@ -1212,15 +1212,14 @@ https://www.essentialsql.com/how-to-use-the-choose-function-with-select/
 ## MODULO 3: Trabajando con índices
 
 ### Acerca de los índices
+
 * Un índice es una estructura de datos que permite un acceso mucho más rápido a los datos.
 * Los índices nos ayudan a reducir las operaciones de entrada y salida y el consumo de recursos del sistema.
 * Si en una tabla creamos demasiados índices, se reducirá el rendimiento al escribir en ella.
 * Vista indizaad: Usar índices en vistas que empleen muchos agregados, combinaciones de tablas o ambos operadores. 
 
 ```
-Con SQL Server, algunos índices se crean automáticamente. Cuando
-intentamos aplicar una clave principal o una restricción única, se crea
-automáticamente un índice único.
+Con SQL Server, algunos índices se crean automáticamente. Cuando intentamos aplicar una clave principal o una restricción única, se crea automáticamente un índice único.
 ```
 
 ### Tipos de índices
