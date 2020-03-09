@@ -13,7 +13,14 @@
 - [MODULO 3: Trabajando con índices](#)
     - [Acerca de los índices](#acerca-de-los-índices)
     - [Tipos de índices](#tipos-de-índices)
+- [MODULO 3: Trabajando con transacciones](#)
+    - [Qué es una transacción](#qué-es-una-transacción)
+    - [Tipos de transacciones](#tipos-de-transacciones)
+    - [Niveles de aislamiento](#niveles-de-aislamiento)
+    - [Bloqueos](#bloqueos)
+    - [Interbloqueos](#interbloqueos)
 
+  
 ## MODULO 1: Trabajando con objetos de bases de datos
 
 ## MODULO 2: T-SQL y programabilidad de bases de datos
@@ -1216,46 +1223,276 @@ https://www.essentialsql.com/how-to-use-the-choose-function-with-select/
 * Un índice es una estructura de datos que permite un acceso mucho más rápido a los datos.
 * Los índices nos ayudan a reducir las operaciones de entrada y salida y el consumo de recursos del sistema.
 * Si en una tabla creamos demasiados índices, se reducirá el rendimiento al escribir en ella.
-* Vista indizaad: Usar índices en vistas que empleen muchos agregados, combinaciones de tablas o ambos operadores. 
+* Vista indizada: Usar índices en vistas que empleen muchos agregados, combinaciones de tablas o ambos operadores. 
 
 ```
 Con SQL Server, algunos índices se crean automáticamente. Cuando intentamos aplicar una clave principal o una restricción única, se crea automáticamente un índice único.
 ```
 
-### Tipos de índices
-https://www.guru99.com/clustered-vs-non-clustered-index.html
+<div align="right"><small><a href="#tabla-de-contenido">volver al inicio</a></small></div>
 
-Clustered index
+
+### Tipos de índices
+
+#### Clustered index
 * With a clustered index the rows are stored physically on the disk in the same order as the index. Therefore, there can be only one clustered index.
 * It is generally faster to read from a clustered index if you want to get back all the columns. You do not have to go first to the index and then to the table.
 * Writing to a table with a clustered index can be slower, if there is a need to rearrange the data.
 
 ![](img/clustered-index.png)
 
-Crear un clustered index
 ```sql
---Indice compuesto
+-- Crear un clustered index (índice compuesto)
 CREATE CLUSTERED INDEX IX_tblStudent_Gender_Score
 ON student(gender ASC, total_score DESC)
 ```
 
-Non-clustered index
+#### Non-clustered index
 * With a non clustered index there is a second list that has pointers to the physical rows. You can have many non clustered indices, although each new index will increase the time it takes to write new records. 
 
-Crear un non-clustered index
 ```sql
+--Crear un non-clustered index
 CREATE NONCLUSTERED INDEX IX_tblStudent_Name
 ON student(name ASC)
 ```
 ![](img/non-clustered-index.png)
 
-Tips
 
-recuperar todos los índices de la tabla
+
 ```sql
+-- Recuperar todos los índices de la tabla
 EXECUTE sp_helpindex student
 ```
 
 Links
 * http://skatageri.blogspot.com/p/index.html
 * https://www.sqlshack.com/es/cual-es-la-diferencia-entre-indices-agrupados-y-no-agrupados-en-sql-server/
+* https://www.guru99.com/clustered-vs-non-clustered-index.html
+
+<div align="right"><small><a href="#tabla-de-contenido">volver al inicio</a></small></div>
+
+## MODULO 3: Trabajando con transacciones
+
+### Qué es una transacción
+
+Una transacción es un conjunto de instrucciones agrupado como una **unidad de trabajo**. 
+* Transacción exitosa: commit
+* Transacción fallida: roll back
+
+Los problemas de simultaneidad se abordan mediante el aislamiento de transacciones (mecanismo de bloqueo).
+
+#### Propiedades ACID
+Toda transacción debe cumplir con los principios ACID para ser válida.
+* A. Atomicidad: todo o nad+a.
+* C. Coherencia: solo un usuario puede hacer cambios sobre una unidad de datos concreta.
+* I. Independencia (aislamiento): Cada transacción es independiente de las otras transacciones.
+* D. Durabilidad (permanencia): Si la transacción se confirma, los cambios serán persistentes aunque se produzca un fallo del sistema inmediatamente después.
+
+SQL Server envía las transacciones confirmadas a disco.
+
+#### Contadores de transacciones
+
+Para consultar el número de transacciones activas usamos la variable de sistema ```@@TRANCOUNT```
+
+* Cada transacción que empieza incrementa el valor del contador en 1
+* La operación de reversión pone el contador en 0
+* Cuando se confirma una transacción, el valor del contador se reduce en 1
+
+```sql
+PRINT @@TRANCOUNT -- 0
+BEGIN TRAN
+PRINT @@TRANCOUNT -- 1
+BEGIN TRAN
+PRINT @@TRANCOUNT -- 2
+COMMIT
+PRINT @@TRANCOUNT -- 1
+COMMIT
+PRINT @@TRANCOUNT -- 0
+```
+
+<div align="right"><small><a href="#tabla-de-contenido">volver al inicio</a></small></div>
+
+### Tipos de transacciones
+
+#### Transacciones implícitas
+
+El motor inicia la transacción desde que ejecuta una de las siguientes instrucciones: ALTER TABLE, INSERT, CREATE, OPEN, DELETE, REVOKE, DROP, SELECT, FETCH, TRUNCATE TABLE, GRANT, UPDATE.
+
+```sql
+
+SET IMPLICIT_TRANSACTIONS ON
+
+DECLARE @importe DECIMAL(18,2),
+@CuentaOrigen VARCHAR(12),
+@CuentaDestino VARCHAR(12)
+
+/* Asignamos el importe de la transferencia
+y las cuentas de origen y destino */
+SET @importe = 50
+SET @CuentaOrigen = '200700000002'
+SET @CuentaDestino = '200700000001'
+
+BEGIN TRY
+/* Descontamos el importe de la cuenta origen */
+UPDATE CUENTAS
+SET SALDO = SALDO - @importe
+WHERE NUMCUENTA = @CuentaOrigen
+
+/* Registramos el movimiento */
+INSERT INTO MOVIMIENTOS
+(IDCUENTA, SALDO_ANTERIOR, SALDO_POSTERIOR, IMPORTE, FXMOVIMIENTO)
+SELECT
+IDCUENTA, SALDO + @importe, SALDO, @importe, getdate()
+FROM CUENTAS
+WHERE NUMCUENTA = @CuentaOrigen
+
+/* Incrementamos el importe de la cuenta destino */
+UPDATE CUENTAS
+SET SALDO = SALDO + @importe
+WHERE NUMCUENTA = @CuentaDestino
+
+/* Registramos el movimiento */
+INSERT INTO MOVIMIENTOS
+(IDCUENTA, SALDO_ANTERIOR, SALDO_POSTERIOR, IMPORTE, FXMOVIMIENTO)
+SELECT
+IDCUENTA, SALDO - @importe, SALDO, @importe, getdate()
+FROM CUENTAS
+WHERE NUMCUENTA = @CuentaDestino
+
+/* Confirmamos la transaccion*/
+COMMIT TRANSACTION -- O solo COMMIT
+END TRY
+BEGIN CATCH
+/* Hay un error, deshacemos los cambios*/
+ROLLBACK TRANSACTION -- O solo ROLLBACK
+PRINT 'Se ha producido un error!'
+END CATCH
+```
+
+
+#### Transacciones explícitas
+
+Inicia explícitamente con la instrucción `BEGIN TRANSACTION` y termina con `COMMIT` o `ROLLBACK`
+
+```sql
+DECLARE 
+@importe DECIMAL(18,2),
+@CuentaOrigen VARCHAR(12),
+@CuentaDestino VARCHAR(12)
+
+/* Asignamos el importe de la transferencia y las cuentas de origen y destino */
+SET @importe = 50
+SET @CuentaOrigen = '200700000002'
+SET @CuentaDestino = '200700000001'
+
+BEGIN TRANSACTION -- O solo BEGIN TRAN
+BEGIN TRY
+	/* Descontamos el importe de la cuenta origen */
+	UPDATE CUENTAS SET SALDO = SALDO - @importe WHERE NUMCUENTA = @CuentaOrigen
+
+	/* Registramos el movimiento */
+	INSERT INTO MOVIMIENTOS (IDCUENTA, SALDO_ANTERIOR, SALDO_POSTERIOR,  IMPORTE, FXMOVIMIENTO)
+	SELECT IDCUENTA, SALDO + @importe, SALDO, @importe, getdate() FROM CUENTAS WHERE NUMCUENTA = @CuentaOrigen
+
+	/* Incrementamos el importe de la cuenta destino */
+	UPDATE CUENTAS SET SALDO = SALDO + @importe	WHERE NUMCUENTA = @CuentaDestino
+
+	/* Registramos el movimiento */
+	INSERT INTO MOVIMIENTOS (IDCUENTA, SALDO_ANTERIOR, SALDO_POSTERIOR, IMPORTE, FXMOVIMIENTO)
+	SELECT IDCUENTA, SALDO - @importe, SALDO, @importe, getdate() FROM CUENTAS WHERE NUMCUENTA = @CuentaDestino
+
+	/* Confirmamos la transaccion*/
+	COMMIT TRANSACTION -- O solo COMMIT
+END TRY
+BEGIN CATCH
+	/* Hay un error, deshacemos los cambios*/
+	ROLLBACK TRANSACTION -- O solo ROLLBACK
+	PRINT 'Se ha producido un error!'
+END CATCH
+```
+
+```sql 
+begin tran
+    begin try
+        insert into Publishers (PublisherID, PublisherName) values(3, 'Editorial 3');
+        delete from Publishers where PublisherID = 1
+    end try
+    begin catch
+        if @@TRANCOUNT > 0 rollback tran;
+        select ERROR_MESSAGE(), ERROR_STATE(), ERROR_NUMBER()
+    end catch
+
+IF @@TRANCOUNT > 0 commit tran
+```
+
+```sql
+set xact_abort on 
+begin try
+    begin tran
+    insert into Publishers (PublisherID, PublisherName) values(3, 'Editorial 3');
+    delete from Publishers where PublisherID = 1
+    commit tran
+end try
+begin catch
+    if XACT_STATE() = -1
+    begin
+        print 'Error FK';
+        rollback tran;
+    end
+
+    if XACT_STATE() = 1
+        commit tran
+    
+end catch
+```
+
+#### Transacciones de confirmación automática
+
+Toda instrucción inicia una transacción. También `SELECT`, que simplemente lee, inicia una transacción para poder funcionar de forma aislada.
+
+Cada instrucción individual es una transacción.
+
+```sql
+DECLARE 
+@importe DECIMAL(18,2),
+@CuentaOrigen VARCHAR(12),
+@CuentaDestino VARCHAR(12)
+
+/* Asignamos el importe de la transferencia y las cuentas de origen y destino */
+SET @importe = 50
+SET @CuentaOrigen  = '200700000001'
+SET @CuentaDestino = '200700000002'
+
+/* Descontamos el importe de la cuenta origen */
+UPDATE CUENTAS SET SALDO = SALDO - @importe WHERE NUMCUENTA = @CuentaOrigen
+
+/* Registramos el movimiento */
+INSERT INTO MOVIMIENTOS (IDCUENTA, SALDO_ANTERIOR, SALDO_POSTERIOR, IMPORTE, FXMOVIMIENTO)
+SELECT IDCUENTA, SALDO + @importe, SALDO, @importe, getdate() FROM CUENTAS WHERE NUMCUENTA = @CuentaOrigen
+
+/* Incrementamos el importe de la cuenta destino */
+UPDATE CUENTAS SET SALDO = SALDO + @importe WHERE NUMCUENTA = @CuentaDestino
+
+/* Registramos el movimiento */
+INSERT INTO MOVIMIENTOS (IDCUENTA, SALDO_ANTERIOR, SALDO_POSTERIOR, IMPORTE, FXMOVIMIENTO)
+SELECT IDCUENTA, SALDO - @importe, SALDO, @importe, getdate() FROM CUENTAS WHERE NUMCUENTA = @CuentaDestino
+```
+
+#### Transacciones distribuidas
+
+Se utiliza el servicio Coordinador de transacciones distribuidas (Microsoft Distributed Coordinator). Este servicio es el que mantiene organizadas las transacciones que deben gestionarse a través de múltiples servidores. 
+
+<div align="right"><small><a href="#tabla-de-contenido">volver al inicio</a></small></div>
+
+### Niveles de aislamiento
+
+<div align="right"><small><a href="#tabla-de-contenido">volver al inicio</a></small></div>
+
+### Bloqueos
+
+<div align="right"><small><a href="#tabla-de-contenido">volver al inicio</a></small></div>
+
+### Interbloqueos
+
+
+<div align="right"><small><a href="#tabla-de-contenido">volver al inicio</a></small></div>
