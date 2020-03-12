@@ -10,10 +10,10 @@
     - [Programabilidad con T-SQL](#programabilidad-con-t-sql)
     - [Qué es un procedimiento almacenado](#que-es-un-procedimiento-almacenado)
     - [Funciones personalizadas](#funciones-personalizadas)
-- [MODULO 3: Trabajando con índices](#)
+- [MODULO 3: Trabajando con índices](#trabajando-con-índices)
     - [Acerca de los índices](#acerca-de-los-índices)
     - [Tipos de índices](#tipos-de-índices)
-- [MODULO 3: Trabajando con transacciones](#)
+- [MODULO 3: Trabajando con transacciones](#trabajando-con-transacciones)
     - [Qué es una transacción](#qué-es-una-transacción)
     - [Tipos de transacciones](#tipos-de-transacciones)
     - [Niveles de aislamiento](#niveles-de-aislamiento)
@@ -1326,46 +1326,33 @@ DECLARE @importe DECIMAL(18,2),
 @CuentaOrigen VARCHAR(12),
 @CuentaDestino VARCHAR(12)
 
-/* Asignamos el importe de la transferencia
-y las cuentas de origen y destino */
+/* Asignamos el importe de la transferencia y las cuentas de origen y destino */
 SET @importe = 50
 SET @CuentaOrigen = '200700000002'
 SET @CuentaDestino = '200700000001'
 
 BEGIN TRY
-/* Descontamos el importe de la cuenta origen */
-UPDATE CUENTAS
-SET SALDO = SALDO - @importe
-WHERE NUMCUENTA = @CuentaOrigen
+    /* Descontamos el importe de la cuenta origen */
+    UPDATE CUENTAS SET SALDO = SALDO - @importe WHERE NUMCUENTA = @CuentaOrigen
 
-/* Registramos el movimiento */
-INSERT INTO MOVIMIENTOS
-(IDCUENTA, SALDO_ANTERIOR, SALDO_POSTERIOR, IMPORTE, FXMOVIMIENTO)
-SELECT
-IDCUENTA, SALDO + @importe, SALDO, @importe, getdate()
-FROM CUENTAS
-WHERE NUMCUENTA = @CuentaOrigen
+    /* Registramos el movimiento */
+    INSERT INTO MOVIMIENTOS (IDCUENTA, SALDO_ANTERIOR, SALDO_POSTERIOR, IMPORTE, FXMOVIMIENTO)
+    SELECT IDCUENTA, SALDO + @importe, SALDO, @importe, getdate() FROM CUENTAS WHERE NUMCUENTA = @CuentaOrigen
 
-/* Incrementamos el importe de la cuenta destino */
-UPDATE CUENTAS
-SET SALDO = SALDO + @importe
-WHERE NUMCUENTA = @CuentaDestino
+    /* Incrementamos el importe de la cuenta destino */
+    UPDATE CUENTAS SET SALDO = SALDO + @importe WHERE NUMCUENTA = @CuentaDestino
 
-/* Registramos el movimiento */
-INSERT INTO MOVIMIENTOS
-(IDCUENTA, SALDO_ANTERIOR, SALDO_POSTERIOR, IMPORTE, FXMOVIMIENTO)
-SELECT
-IDCUENTA, SALDO - @importe, SALDO, @importe, getdate()
-FROM CUENTAS
-WHERE NUMCUENTA = @CuentaDestino
+    /* Registramos el movimiento */
+    INSERT INTO MOVIMIENTOS (IDCUENTA, SALDO_ANTERIOR, SALDO_POSTERIOR, IMPORTE, FXMOVIMIENTO)
+    SELECT IDCUENTA, SALDO - @importe, SALDO, @importe, getdate() FROM CUENTAS WHERE NUMCUENTA = @CuentaDestino
 
-/* Confirmamos la transaccion*/
-COMMIT TRANSACTION -- O solo COMMIT
+    /* Confirmamos la transaccion*/
+    COMMIT TRANSACTION -- O solo COMMIT
 END TRY
 BEGIN CATCH
-/* Hay un error, deshacemos los cambios*/
-ROLLBACK TRANSACTION -- O solo ROLLBACK
-PRINT 'Se ha producido un error!'
+    /* Hay un error, deshacemos los cambios*/
+    ROLLBACK TRANSACTION -- O solo ROLLBACK
+    PRINT 'Se ha producido un error!'
 END CATCH
 ```
 
@@ -1386,29 +1373,29 @@ SET @CuentaOrigen = '200700000002'
 SET @CuentaDestino = '200700000001'
 
 BEGIN TRANSACTION -- O solo BEGIN TRAN
-BEGIN TRY
-	/* Descontamos el importe de la cuenta origen */
-	UPDATE CUENTAS SET SALDO = SALDO - @importe WHERE NUMCUENTA = @CuentaOrigen
+    BEGIN TRY
+        /* Descontamos el importe de la cuenta origen */
+        UPDATE CUENTAS SET SALDO = SALDO - @importe WHERE NUMCUENTA = @CuentaOrigen
 
-	/* Registramos el movimiento */
-	INSERT INTO MOVIMIENTOS (IDCUENTA, SALDO_ANTERIOR, SALDO_POSTERIOR,  IMPORTE, FXMOVIMIENTO)
-	SELECT IDCUENTA, SALDO + @importe, SALDO, @importe, getdate() FROM CUENTAS WHERE NUMCUENTA = @CuentaOrigen
+        /* Registramos el movimiento */
+        INSERT INTO MOVIMIENTOS (IDCUENTA, SALDO_ANTERIOR, SALDO_POSTERIOR,  IMPORTE, FXMOVIMIENTO)
+        SELECT IDCUENTA, SALDO + @importe, SALDO, @importe, getdate() FROM CUENTAS WHERE NUMCUENTA = @CuentaOrigen
 
-	/* Incrementamos el importe de la cuenta destino */
-	UPDATE CUENTAS SET SALDO = SALDO + @importe	WHERE NUMCUENTA = @CuentaDestino
+        /* Incrementamos el importe de la cuenta destino */
+        UPDATE CUENTAS SET SALDO = SALDO + @importe	WHERE NUMCUENTA = @CuentaDestino
 
-	/* Registramos el movimiento */
-	INSERT INTO MOVIMIENTOS (IDCUENTA, SALDO_ANTERIOR, SALDO_POSTERIOR, IMPORTE, FXMOVIMIENTO)
-	SELECT IDCUENTA, SALDO - @importe, SALDO, @importe, getdate() FROM CUENTAS WHERE NUMCUENTA = @CuentaDestino
+        /* Registramos el movimiento */
+        INSERT INTO MOVIMIENTOS (IDCUENTA, SALDO_ANTERIOR, SALDO_POSTERIOR, IMPORTE, FXMOVIMIENTO)
+        SELECT IDCUENTA, SALDO - @importe, SALDO, @importe, getdate() FROM CUENTAS WHERE NUMCUENTA = @CuentaDestino
 
-	/* Confirmamos la transaccion*/
-	COMMIT TRANSACTION -- O solo COMMIT
-END TRY
-BEGIN CATCH
-	/* Hay un error, deshacemos los cambios*/
-	ROLLBACK TRANSACTION -- O solo ROLLBACK
-	PRINT 'Se ha producido un error!'
-END CATCH
+        /* Confirmamos la transaccion*/
+        COMMIT TRANSACTION -- O solo COMMIT
+    END TRY
+    BEGIN CATCH
+        /* Hay un error, deshacemos los cambios*/
+        ROLLBACK TRANSACTION -- O solo ROLLBACK
+        PRINT 'Se ha producido un error!'
+    END CATCH
 ```
 
 ```sql 
@@ -1429,9 +1416,9 @@ IF @@TRANCOUNT > 0 commit tran
 set xact_abort on 
 begin try
     begin tran
-    insert into Publishers (PublisherID, PublisherName) values(3, 'Editorial 3');
-    delete from Publishers where PublisherID = 1
-    commit tran
+        insert into Publishers (PublisherID, PublisherName) values(3, 'Editorial 3');
+        delete from Publishers where PublisherID = 1
+        commit tran
 end try
 begin catch
     if XACT_STATE() = -1
@@ -1448,8 +1435,7 @@ end catch
 
 #### Transacciones de confirmación automática
 
-Toda instrucción inicia una transacción. También `SELECT`, que simplemente lee, inicia una transacción para poder funcionar de forma aislada.
-
+Toda instrucción inicia una transacción. También `SELECT`, que simplemente lee, inicia una transacción para poder funcionar de forma aislada. 
 Cada instrucción individual es una transacción.
 
 ```sql
@@ -1485,6 +1471,102 @@ Se utiliza el servicio Coordinador de transacciones distribuidas (Microsoft Dist
 <div align="right"><small><a href="#tabla-de-contenido">volver al inicio</a></small></div>
 
 ### Niveles de aislamiento
+
+Los niveles de aislamiento son una protección de las transacciones en un entorno de simultaneidad. Esta protección se realiza mediante la **obtención de bloqueos**.
+
+Cuando hay muchos usuarios intentando modificar datos a un mismo tiempo, tenemos que poner en práctica un sistema de control: control de simultaneidad.
+
+#### Control de simulataneidad
+Es la gestión de las transacciones que intentan modificar los recursos al mismo tiempo. Hay 2 tipos:
+* Control pesimista
+    * aplica bloqueos
+    * para entornos de alta concurrencia
+* Control optimista:
+    * NO aplica bloqueos
+    * para entornos de baja concurrencia
+
+#### Efectos de la simultaneidad
+
+Lista de efectos que podemos encontrarnos durante la ejecución de transacciones con diversos niveles de aislamiento:
+
+![](img/efectos-simulataneidad.png)
+
+El uso de "niveles de aislamiento" puede evitar estos efectos.
+
+#### Tipos de niveles de aislamiento
+
+Cada nivel de aislamiento tiene un impacto determinado sobre los efectos de la simultaneidad. Hay diversos niveles de aislamiento:
+* READ UNCOMMITTED
+    * control optimista
+    * no bloqueos al leer datos
+    * permite mayor simultaneidad
+    * se producen lecturas: sucias, no repetible, fantasma
+* READ COMMITTED
+    * el nivel que usa el motor por defecto
+    * control pesimista
+    * bloqueos al leer datos (si una transacción quiere leer datos tiene que esperar hasta que se levante el bloqueo)
+* REPETEABLE READ
+    * 
+* SNAPSHOT
+    * con control de versiones de filas
+* SERIALIZABLE
+    * nivel de aislamiento más restrictivo
+    * simultaneidad baja
+
+> Cuanto más restrictivo es el nivel de aislamiento, más probabilidades hay de que se produzcan interbloqueos.
+
+
+La sintaxis para cambiar el nivel de aislamiento de transacciones es la siguiente (solo se puede establecer una opción de nivel de aislamiento cada vez):
+
+```sql
+SET TRANSACTION ISOLATION LEVEL {READ UNCOMMITTED|READ
+COMMITTED|REPEATABLE READ|SNAPSHOT|SERIALIZABLE};
+```
+
+```sql
+-- file1.sql
+begin tran
+	update MultiValues set SampleDescription = 'FIVE-FIFTY'
+	where IDMultiValue = 5
+
+	waitfor delay '00:00:10'
+	rollback
+
+-- file2.sql
+-- aplicar nivel de aislamiento "read uncommitted" a toda la transacción
+-- ejemplo de lectura sucia
+set tran isolation level read uncommitted
+	select * from MultiValues
+```
+
+### Nivel de aislamiento a nivel de tabla
+
+Si usamos `SET TRANSACTION ISOLATION LEVEL` estaremos aplicando el nivel de aislamiento a la transacción completa. Pero es posible aplicarlo a nivel de tabla con las siguientes instrucciones:
+* HOLDLOCK o SERIALIZABLE
+* NOLOCK o READUNCOMMITTED
+* READCOMMITED
+* REPEATABLEREAD
+
+Para incluir estas instrucciones usamos la palabra clave `WITH`
+
+```sql
+SELECT SO.SalesOrderDate, C.FirstName, C.LastName, SOD.Price, SOD.Quantity
+FROM
+-- read committed (por defecto) en las primeras dos tablas
+Sales.SalesOrders SO
+JOIN Sales.SalesOrderDetails SOD ON SO.SalesOrderID = SOD.SalesOrderID
+-- read uncommitted en la tabla Sales.Customers
+JOIN Sales.Customers C WITH(NOLOCK) ON SO.CustomerID = C.CustomerID
+```
+
+```sql
+SELECT SO.SalesOrderDate, C.FirstName, C.LastName, SOD.Price, SOD.Quantity
+FROM
+-- read committed (por defecto) en las primeras dos tablas Sales.SalesOrders SO
+JOIN Sales.SalesOrderDetails SOD ON SO.SalesOrderID = SOD.SalesOrderID
+-- serializable en la tabla Sales.Customers
+JOIN Sales.Customers C WITH(HOLDLOCK) ON So.CustomerID = C.CustomerID
+```
 
 <div align="right"><small><a href="#tabla-de-contenido">volver al inicio</a></small></div>
 
