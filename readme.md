@@ -13,7 +13,7 @@
 - [MODULO 3: Trabajando con índices](#trabajando-con-índices)
     - [Acerca de los índices](#acerca-de-los-índices)
     - [Tipos de índices](#tipos-de-índices)
-- [MODULO 3: Trabajando con transacciones](#trabajando-con-transacciones)
+- [MODULO 4: Trabajando con transacciones](#modulo-4-trabajando-con-transacciones)
     - [Qué es una transacción](#qué-es-una-transacción)
     - [Tipos de transacciones](#tipos-de-transacciones)
     - [Niveles de aislamiento](#niveles-de-aislamiento)
@@ -1271,7 +1271,7 @@ Links
 
 <div align="right"><small><a href="#tabla-de-contenido">volver al inicio</a></small></div>
 
-## MODULO 3: Trabajando con transacciones
+## MODULO 4: Trabajando con transacciones
 
 ### Qué es una transacción
 
@@ -1283,19 +1283,16 @@ Los problemas de simultaneidad se abordan mediante el aislamiento de transaccion
 
 #### Propiedades ACID
 Toda transacción debe cumplir con los principios ACID para ser válida.
-* A. Atomicidad: todo o nad+a.
+* A. Atomicidad: todo o nada.
 * C. Coherencia: solo un usuario puede hacer cambios sobre una unidad de datos concreta.
 * I. Independencia (aislamiento): Cada transacción es independiente de las otras transacciones.
-* D. Durabilidad (permanencia): Si la transacción se confirma, los cambios serán persistentes aunque se produzca un fallo del sistema inmediatamente después.
-
-SQL Server envía las transacciones confirmadas a disco.
+* D. Durabilidad (permanencia): Si la transacción se confirma, los cambios serán persistentes aunque se produzca un fallo del sistema inmediatamente después. SQL Server envía las transacciones confirmadas a disco.
 
 #### Contadores de transacciones
 
-Para consultar el número de transacciones activas usamos la variable de sistema ```@@TRANCOUNT```
-
+Para consultar el número de transacciones activas usamos la variable de sistema `@@TRANCOUNT`
 * Cada transacción que empieza incrementa el valor del contador en 1
-* La operación de reversión pone el contador en 0
+* La operación de reversión (rollback) pone el contador en 0
 * Cuando se confirma una transacción, el valor del contador se reduce en 1
 
 ```sql
@@ -1479,11 +1476,15 @@ Cuando hay muchos usuarios intentando modificar datos a un mismo tiempo, tenemos
 #### Control de simulataneidad
 Es la gestión de las transacciones que intentan modificar los recursos al mismo tiempo. Hay 2 tipos:
 * Control pesimista
-    * aplica bloqueos
-    * para entornos de alta concurrencia
-* Control optimista:
+    * pro: siempre vamos a estar leyendo la información correcta (confirmada)
+    * contra: aplica bloqueos
+* Control optimista
+    * siempre tenemos acceso a las tablas
+    * no se nos para ningún proceso
     * NO aplica bloqueos
-    * para entornos de baja concurrencia
+    * contra: hay que asegurar que la información es correcta
+
+Los controles pesimista y optimista se pueden definir a nivel de transacción o a nivel de objeto (tabla).
 
 #### Efectos de la simultaneidad
 
@@ -1572,9 +1573,87 @@ JOIN Sales.Customers C WITH(HOLDLOCK) ON So.CustomerID = C.CustomerID
 
 ### Bloqueos
 
+Es una funcionalidad del motor que permite trabajar en un entorno multiusuario con simultaneidad.
+* Asegurar integridad de las transacciones
+* Mantener coherencia de las BDs
+
+Cada transacción solicita bloqueos en diversos tipos de objetos como filas, páginas o tablas para impedir que otras transacciones puedan modificar estos recursos.
+
+Los bloqueos son gestionados por el motor de BDs, en el llamado Administrador de bloqueos (Lock Manager).
+
+```
+Para ver los bloqueos:
+Sobre el servidor de BD, clic derecho, Activity Monitor, Processes
+```
+
+
+
+#### Granularidad del bloqueo
+
+La sucesión de niveles de granularidad de los bloqueos es la siguiente: tabla, página y fila (o clave).
+* Bloqueo de BAJA granularidad: Filas --> +simultaneidad, +bloqueos
+* Bloqueo de ALTA granularidad: Tabla --> -simultaneidad, -bloqueos
+
+Recursos que pueden bloquearse:
+
+![](img/recursos-bloqueo.png)
+
+#### Modos de bloqueo
+
+Modos de bloqueo para administrar las transacciones simultáneas:
+
+![](img/modos-bloqueo.png)
+
+#### Extensión de bloqueos
+
+SQL Server aplica un algoritmo de extensión de bloqueos para convertir muchos bloqueos de granulado fino en pocos bloqueos de granulado grueso, reduciendo la sobrecarga del sistema pero también aumentando la probabilidad de concurrencia simultánea.
+
+#### Compatibilidad de bloqueos
+
+Links:
+* Fundamentos de los Bloqueos en SQL Server https://www.youtube.com/watch?v=YIqJCds-ry0 
+
 <div align="right"><small><a href="#tabla-de-contenido">volver al inicio</a></small></div>
 
 ### Interbloqueos
 
+Un interbloqueo es una amenaza que los administradores de BD deben evitar. 
+
+```
+Un interbloqueo se produce cuando dos o más tareas se bloquean entre sí de forma permanente, debido a que cada una tiene bloqueado un recurso que la otra tarea intenta bloquear.
+```
+
+También como conocido como: redundancia cíclica, abrazo mortal, deadlock
+
+![](img/interbloqueo.gif)
+
+El único modo de detener este comportamiento es eliminar uno de los dos procesos, al que llamamos víctima. El motor de bases de datos de SQL Server debe decidir cuál de los procesos será la víctima empleando el **monitor de bloqueos**
+
+#### Detecciíon de interbloqueos
+
+SQL Server está diseñado para gestionar los interbloqueos automáticamente y escoger la víctima a la que hay que eliminar.
+
+El **monitor de bloqueos** escoge qué proceso debe ser interrumpido según la opción `DEADLOCK_PRIORITY`. Si los procesos involucrados tienen ambos el mismo nivel de prioridad, el monitor elige el proceso cuya reversión sea menos costosa.
+
+```sql
+SET DEADLOCK_PRIORITY {LOW|HIGH|NORMAL}; -- marca de prioridad (también podría emplearse una variable de cadena)
+```
+
+#### Supervisar interbloqueos
+
+Una herramienta para supervisar los interbloqueos es **SQL Server Profiler**
+
+#### Cómo minimizar los interbloqueos
+
+Es imposible evitar completamente los interbloqueos.
+
+Seguir las siguientes reglas de codificación: 
+* Acceder a los objetos en el mismo orden
+* Evitar la interacción con el usuario durante la ejecución de transacciones
+* Mantener cada transacción tan corta como sea posible y en un solo lote
+* Utilizar el menor nivel de aislamiento posible
+* Utilizar un nivel de aislamiento basado en el control de versiones de filas (sin
+olvidar que esto involucra a los recursos de tempdb)
+* Utilizar conexiones enlazadas
 
 <div align="right"><small><a href="#tabla-de-contenido">volver al inicio</a></small></div>
