@@ -1,6 +1,6 @@
 <div align="center"><img src="./img/curso-sql-server-practico.png" alt="nodejs-logo"></div>
 
-# Introbook SQL Server práctico para desarrolladores
+# SQL Server práctico para desarrolladores (Introbook)
 
 ## Tabla de contenido
 
@@ -59,11 +59,30 @@ Links
 https://www.youtube.com/watch?v=IkWjLBIolso&t=1213s
 
 
-
-
 <div align="right"><small><a href="#tabla-de-contenido">volver al inicio</a></small></div>
 
 ### Instrucciones DDL y DML
+
+![](img/sentencias-sql.png)
+
+* DDL (Data Definition Language): Permite crear y modificar la estructura de una base de datos.
+    * CREATE: Utilizado para crear nuevas tablas, campos e índices.
+    * ALTER: Utilizado para modificar las tablas agregando campos o cambiando la definición de los campos.
+    * DROP: Empleado para eliminar tablas e índices.
+    * TRUNCATE: Empleado para eliminar todos los registros de una tabla.
+    * COMMENT: Utilizado para agregar comentarios al diccionario de datos.
+    * RENAME: Tal como su nombre lo indica es utilizado para renombrar objetos.
+* DML (Data Manipulation Language): Permite recuperar, almacenar, modificar, eliminar, insertar y actualizar datos de una base de datos.
+    * SELECT: Utilizado para consultar registros de la base de datos que satisfagan un criterio determinado.
+    * INSERT: Utilizado para cargar de datos en la base de datos en una única operación.
+    * UPDATE: Utilizado para modificar los valores de los campos y registros especificados
+    * DELETE: Utilizado para eliminar registros de una tabla de una base de datos.
+* DCL (Data Control Language): Permite crear roles, permisos e integridad referencial, así como el control al acceso a la base de datos.
+    * GRANT: Usado para otorgar privilegios de acceso de usuario a la base de datos.
+    * REVOKE: Utilizado para retirar privilegios de acceso otorgados con el comando GRANT.
+* TCL (Transactional Control Language): Permite administrar diferentes transacciones que ocurren dentro de una base de datos.
+    * COMMIT: Empleado para guardar el trabajo hecho.
+    * ROLLBACK: Utilizado para deshacer la modificación que hice desde el último COMMIT.
 
 <div align="right"><small><a href="#tabla-de-contenido">volver al inicio</a></small></div>
 
@@ -76,8 +95,6 @@ A query is a question or inquiry to a set of data. We use SQL, or Structured Que
 ¿Cómo funciona una consulta?
 
 La lógica que sigue el motor para el procesado de consultas es la siguiente:
-
-![](img/orden-procesamiento-consulta.png)
 
 ![](img/pasos-procesamiento-consulta.png)
 
