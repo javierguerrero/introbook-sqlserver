@@ -88,6 +88,9 @@ https://www.youtube.com/watch?v=IkWjLBIolso&t=1213s
 
 ### Consultas y subconsultas
 
+[![Sub-consulta en el SQL Server](https://img.youtube.com/vi/QucZ1itSzVw/0.jpg)](https://www.youtube.com/watch?v=QucZ1itSzVw)
+
+
 ¿Qué es una consulta?
 
 A query is a question or inquiry to a set of data. We use SQL, or Structured Query Language, to retrieve data from databases.
@@ -211,8 +214,11 @@ Common Table Expressions (CTE)
 ![](img/cte_syntax.png)
 
 
-* Links:
-    * https://www.campusmvp.es/recursos/post/SQL-Server-Expresiones-de-tabla-comunes.aspx
+Links:
+* https://www.campusmvp.es/recursos/post/SQL-Server-Expresiones-de-tabla-comunes.aspx
+* Sub-consulta en el SQL Server: https://www.youtube.com/watch?v=QucZ1itSzVw
+
+
 
 
 Ejemplo de una CTE NO recursiva
@@ -1713,3 +1719,18 @@ olvidar que esto involucra a los recursos de tempdb)
 * Utilizar conexiones enlazadas
 
 <div align="right"><small><a href="#tabla-de-contenido">volver al inicio</a></small></div>
+
+
+Charla Comprendiendo los Backups y sus Estrategias: https://www.youtube.com/watch?v=49wZRE1daek
+
+Operaciones Basicas de los planes de Ejecución: https://www.youtube.com/watch?v=zhbiGDkGmF0
+
+Webinar: Vistas, Procedimientos Almacenados y Funciones 70-762 (streaming): https://www.youtube.com/watch?v=asLraPrE5zI
+
+Webcast de Funciones y Triggers en Microsoft SQL Server: https://www.youtube.com/watch?v=auHLx6XJbN8
+
+
+Desarrollo de bases de datos con SQL Server - 70-762
+https://www.udemy.com/course/desarrollo-de-bases-de-datos-con-sql-server-70-762/
+
+
