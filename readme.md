@@ -1,7 +1,11 @@
+<div align="center"><img src="./img/curso-sql-server-practico.png" alt="nodejs-logo"></div>
+
+# Introbook SQL Server práctico para desarrolladores
+
 ## Tabla de contenido
 
 - [MODULO 1: Trabajando con objetos de bases de datos](#)
-- [MODULO 2: T-SQL y programabilidad de bases de datos](#)
+- [MODULO 2: T-SQL y programabilidad de bases de datos](#modulo-2-t-sql-y-programabilidad-de-bases-de-datos)
     - [Introducción a SQL](#introducción-a-sql)
     - [Instrucciones DDL y DML](#instrucciones-ddl-dml)
     - [Consultas y subconsultas](#consultas-y-subconsultas)
@@ -10,7 +14,7 @@
     - [Programabilidad con T-SQL](#programabilidad-con-t-sql)
     - [Qué es un procedimiento almacenado](#que-es-un-procedimiento-almacenado)
     - [Funciones personalizadas](#funciones-personalizadas)
-- [MODULO 3: Trabajando con índices](#trabajando-con-índices)
+- [MODULO 3: Trabajando con índices](#modulo-3-trabajando-con-índices)
     - [Acerca de los índices](#acerca-de-los-índices)
     - [Tipos de índices](#tipos-de-índices)
 - [MODULO 4: Trabajando con transacciones](#modulo-4-trabajando-con-transacciones)
@@ -20,12 +24,42 @@
     - [Bloqueos](#bloqueos)
     - [Interbloqueos](#interbloqueos)
 
-  
+
 ## MODULO 1: Trabajando con objetos de bases de datos
 
 ## MODULO 2: T-SQL y programabilidad de bases de datos
 
 ### Introducción a SQL
+
+SQL es el lenguaje básico de todos los RDBMS. La operación más común en SQL es la instrucción `SELECT`.
+
+Las consultas tienen la siguiente estructura:
+* cláusula `FROM` para indicar el objeto de destino de la consulta;
+* puede incluir un `JOIN` que vincule tablas;
+* cláusula `WHERE` para las expresiones de filtro (predicados);
+* cláusula `GROUP BY` para agrupar datos (usada especialmente en combinación con funciones de agregado);
+* cláusula `HAVING` para filtrar las filas devueltas por la cláusula GROUP BY;
+* cláusula `ORDER BY` para indicar las columnas según las que hay que ordenar los resultados.
+
+
+
+
+HAVING
+* HAVING filters records that work on summarized GROUP BY results.
+* HAVING applies to summarized group records, whereas WHERE applies to individual records.
+* Only the groups that meet the HAVING criteria will be returned.
+* HAVING requires that a GROUP BY clause is present.
+* WHERE and HAVING can be in the same query.
+
+https://www.dofactory.com/sql/having
+
+
+Links
+1.Consultas SQL- Transact-SQL (Select, Where, group by, having, order by, join)
+https://www.youtube.com/watch?v=IkWjLBIolso&t=1213s
+
+
+
 
 <div align="right"><small><a href="#tabla-de-contenido">volver al inicio</a></small></div>
 
@@ -1224,13 +1258,16 @@ https://www.essentialsql.com/how-to-use-the-choose-function-with-select/
 * Los índices nos ayudan a reducir las operaciones de entrada y salida y el consumo de recursos del sistema.
 * Si en una tabla creamos demasiados índices, se reducirá el rendimiento al escribir en ella.
 * Vista indizada: Usar índices en vistas que empleen muchos agregados, combinaciones de tablas o ambos operadores. 
+* Los índices son uno de los pilares más importantes para la optimización de consultas.
 
 ```
 Con SQL Server, algunos índices se crean automáticamente. Cuando intentamos aplicar una clave principal o una restricción única, se crea automáticamente un índice único.
 ```
 
-<div align="right"><small><a href="#tabla-de-contenido">volver al inicio</a></small></div>
+Links:
+* Demostración del Poder de los Índices en SQL Server: https://www.youtube.com/watch?v=PodbAFmHYq8
 
+<div align="right"><small><a href="#tabla-de-contenido">volver al inicio</a></small></div>
 
 ### Tipos de índices
 
@@ -1238,6 +1275,7 @@ Con SQL Server, algunos índices se crean automáticamente. Cuando intentamos ap
 * With a clustered index the rows are stored physically on the disk in the same order as the index. Therefore, there can be only one clustered index.
 * It is generally faster to read from a clustered index if you want to get back all the columns. You do not have to go first to the index and then to the table.
 * Writing to a table with a clustered index can be slower, if there is a need to rearrange the data.
+* Es buena práctica que todas las tablas tengan un índice clustered, ya que el índice cubre casi todos los tipos de consultas (especificas, de rangos cortos, rangos largos o consultas ordenadas) pero debes considerar que una tabla solo puede tener un índice clustered y que su tamaño impacta a todos los demás índices.
 
 ![](img/clustered-index.png)
 
@@ -1249,6 +1287,7 @@ ON student(gender ASC, total_score DESC)
 
 #### Non-clustered index
 * With a non clustered index there is a second list that has pointers to the physical rows. You can have many non clustered indices, although each new index will increase the time it takes to write new records. 
+* El abuso de índices nonclustered suele producir problemas de rendimiento y bloqueos en las operaciones de actualización de datos (INSERT, UPDATE y DELETE).
 
 ```sql
 --Crear un non-clustered index
@@ -1290,7 +1329,7 @@ Toda transacción debe cumplir con los principios ACID para ser válida.
 
 #### Contadores de transacciones
 
-Para consultar el número de transacciones activas usamos la variable de sistema `@@TRANCOUNT`
+Para consultar el número de transacciones activas en la conexión actual usamos la variable de sistema `@@TRANCOUNT`
 * Cada transacción que empieza incrementa el valor del contador en 1
 * La operación de reversión (rollback) pone el contador en 0
 * Cuando se confirma una transacción, el valor del contador se reduce en 1
@@ -1473,7 +1512,7 @@ Los niveles de aislamiento son una protección de las transacciones en un entorn
 
 Cuando hay muchos usuarios intentando modificar datos a un mismo tiempo, tenemos que poner en práctica un sistema de control: control de simultaneidad.
 
-#### Control de simulataneidad
+#### Control de simultaneidad
 Es la gestión de las transacciones que intentan modificar los recursos al mismo tiempo. Hay 2 tipos:
 * Control pesimista
     * pro: siempre vamos a estar leyendo la información correcta (confirmada)
@@ -1623,13 +1662,13 @@ Un interbloqueo es una amenaza que los administradores de BD deben evitar.
 Un interbloqueo se produce cuando dos o más tareas se bloquean entre sí de forma permanente, debido a que cada una tiene bloqueado un recurso que la otra tarea intenta bloquear.
 ```
 
-También como conocido como: redundancia cíclica, abrazo mortal, deadlock
+También conocido como: redundancia cíclica, abrazo mortal, deadlock
 
 ![](img/interbloqueo.gif)
 
 El único modo de detener este comportamiento es eliminar uno de los dos procesos, al que llamamos víctima. El motor de bases de datos de SQL Server debe decidir cuál de los procesos será la víctima empleando el **monitor de bloqueos**
 
-#### Detecciíon de interbloqueos
+#### Detección de interbloqueos
 
 SQL Server está diseñado para gestionar los interbloqueos automáticamente y escoger la víctima a la que hay que eliminar.
 
