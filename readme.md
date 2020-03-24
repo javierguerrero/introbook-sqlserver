@@ -41,9 +41,6 @@ Las consultas tienen la siguiente estructura:
 * cláusula `HAVING` para filtrar las filas devueltas por la cláusula GROUP BY;
 * cláusula `ORDER BY` para indicar las columnas según las que hay que ordenar los resultados.
 
-
-
-
 HAVING
 * HAVING filters records that work on summarized GROUP BY results.
 * HAVING applies to summarized group records, whereas WHERE applies to individual records.
@@ -87,6 +84,38 @@ https://www.youtube.com/watch?v=IkWjLBIolso&t=1213s
 <div align="right"><small><a href="#tabla-de-contenido">volver al inicio</a></small></div>
 
 ### Consultas y subconsultas
+
+#### ¿Qué es una consulta?
+
+A query is a question or inquiry to a set of data. We use SQL, or Structured Query Language, to retrieve data from databases.
+
+¿Cómo funciona una consulta?
+
+La lógica que sigue el motor para el procesado de consultas es la siguiente:
+
+![](img/pasos-procesamiento-consulta.png)
+
+Cada paso genera una **tabla virtual** que se usa para el paso siguiente.
+
+#### ¿Qué es una subconsulta?
+
+Es una consulta anidada que es parte de otra instrucción SELECT, INSERT, UPDATE, DELETE o bien otra subconsulta.
+```sql
+SELECT
+    T.CustomerID,
+    T.MaxTotalQuantity
+FROM 
+    (
+        SELECT
+            CustomerID,
+            MaxTotalQuantity = MAX(TotalQuantity)
+        FROM Sales.SalesOrders
+        WHERE TotalQuantity > 0
+        GROUP BY CustomerID
+    ) AS T
+WHERE T.CustomerID = 10
+```
+
 
 [![Sub-consulta en el SQL Server](https://img.youtube.com/vi/QucZ1itSzVw/0.jpg)](https://www.youtube.com/watch?v=QucZ1itSzVw)
 
@@ -139,38 +168,6 @@ where c.CustomerID = o.CustomerID
 GO
 
 ```
-
-¿Qué es una consulta?
-
-A query is a question or inquiry to a set of data. We use SQL, or Structured Query Language, to retrieve data from databases.
-
-¿Cómo funciona una consulta?
-
-La lógica que sigue el motor para el procesado de consultas es la siguiente:
-
-![](img/pasos-procesamiento-consulta.png)
-
-Cada paso genera una **tabla virtual** que se usa para el paso siguiente.
-
-¿Qué es una subconsulta?
-
-Es una consulta anidada que es parte de otra instrucción SELECT, INSERT, UPDATE, DELETE o bien otra subconsulta.
-```sql
-SELECT
-    T.CustomerID,
-    T.MaxTotalQuantity
-FROM 
-    (
-        SELECT
-            CustomerID,
-            MaxTotalQuantity = MAX(TotalQuantity)
-        FROM Sales.SalesOrders
-        WHERE TotalQuantity > 0
-        GROUP BY CustomerID
-    ) AS T
-WHERE T.CustomerID = 10
-```
-
 Lugares donde se pueden usar subconsultas
 
 En un filtro IN
