@@ -91,6 +91,55 @@ https://www.youtube.com/watch?v=IkWjLBIolso&t=1213s
 [![Sub-consulta en el SQL Server](https://img.youtube.com/vi/QucZ1itSzVw/0.jpg)](https://www.youtube.com/watch?v=QucZ1itSzVw)
 
 
+```sql
+--SUBCONSULTAS AUTONOMAS
+
+select T.CompanyName, sum(T.Total) as Total from 
+(
+select c.CompanyName, o.OrderID, o.OrderDate, p.ProductName, d.UnitPrice, d.Quantity, d.UnitPrice * d.Quantity as Total
+from Customers as c
+inner join Orders as o on c.CustomerID = o.CustomerID
+inner join [Order Details] as d on d.OrderID = o.OrderID
+inner join Products as p on p.ProductID = d.ProductID
+) as T group by T.CompanyName
+
+--subquery devuelto como un escalar calculando fila por fila
+select 
+	ProductName, 
+	UnitPrice, 
+	(select avg(unitprice) from Products) as Average,
+	(select avg(unitprice) from Products) - UnitPrice as Varianza
+from Products
+
+-- devuelve los datos de los cliente que tienen ordenes
+select c.companyname, c.country, c.contactname
+from Customers as c 
+where c.CustomerID in (select distinct customerid from Orders)
+
+
+--SUBCONSULTAS CORRELACIONADAS
+
+--devuelve todas las ordenes donde se pidieron mas de 20 unidades del producto 23
+
+select o.customerid, o.orderid, o.orderdate from orders as o
+where
+(
+select d.quantity from [Order Details] as d
+where d.ProductID = 23 and o.OrderID = d.OrderID
+) > 20
+
+-- subquery con resultado de multiples valores
+-- devuelve los datos de los cliente que tienen ordenes
+select c.companyname, c.country, c.contactname
+from Customers as c where exists
+(
+select o.customerid from Orders as o 
+where c.CustomerID = o.CustomerID
+)
+GO
+
+```
+
 ¿Qué es una consulta?
 
 A query is a question or inquiry to a set of data. We use SQL, or Structured Query Language, to retrieve data from databases.
