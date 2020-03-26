@@ -37,6 +37,16 @@
 
 ### Comprendiendo las tablas
 
+* Las tablas son los objetos básicos de un sistema de gestión de bases de datos porque con las que contienen todos los datos que tenemos que almacenar.
+* Tenemos que diseñarlas empleando las mejores prácticas y estruturarlas de la mejor manera posible para que puedan almacenar grandes cantidades de datos.
+* De forma lógica, las tabals se organizas en esquemas (schemas. Si no especicamos ningún esquema, econtraremos las tablas dentro del esquema por defecto (noralmente es dbo, aunque depende de la configuración).
+* Los esquemas nos ayudan ayudan a organizar mejor el diseño del modelo y a mejorar la gestión de la seguridad. 
+
+[![Esquemas](https://img.youtube.com/vi/muy6IsnE8Do/0.jpg)](https://www.youtube.com/watch?v=muy6IsnE8Do)
+
+```
+Es mejor indicar el esquema siempre, incluso aunque sea el esquema por defecto.
+```
 
 
 ### Tipos de datos en SQL Server
