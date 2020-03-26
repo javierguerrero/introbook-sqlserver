@@ -37,12 +37,39 @@
 
 ### Comprendiendo las tablas
 
-* Las tablas son los objetos básicos de un sistema de gestión de bases de datos porque con las que contienen todos los datos que tenemos que almacenar.
+* Las tablas son los objetos básicos de un sistema de gestión de bases de datos porque son las que contienen todos los datos que tenemos que almacenar.
 * Tenemos que diseñarlas empleando las mejores prácticas y estruturarlas de la mejor manera posible para que puedan almacenar grandes cantidades de datos.
-* De forma lógica, las tabals se organizas en esquemas (schemas. Si no especicamos ningún esquema, econtraremos las tablas dentro del esquema por defecto (noralmente es dbo, aunque depende de la configuración).
-* Los esquemas nos ayudan ayudan a organizar mejor el diseño del modelo y a mejorar la gestión de la seguridad. 
+* De forma lógica, las tablas se organizan en esquemas (schemas). Si no especificamos ningún esquema, econtraremos las tablas dentro del esquema por defecto (normalmente es dbo, aunque depende de la configuración).
+* Los esquemas nos ayudan a organizar mejor el diseño del modelo y a mejorar la gestión de la seguridad. 
 
 [![Esquemas](https://img.youtube.com/vi/muy6IsnE8Do/0.jpg)](https://www.youtube.com/watch?v=muy6IsnE8Do)
+
+```sql
+-- crear login
+use master
+go
+create login UserInformatica with password = 'NOfumar34*'
+
+-- crear un user para el login
+use Northwind
+create user UserInformatica for login UserInformatica
+with default_schema = Informatica
+go
+
+-- crear esquema asociado al user
+use Northwind
+go
+create schema Curso authorization UserInformatica
+go
+
+create schema Informatica authorization UserInformatica
+go
+
+-- dar permisos de creación de tabla al usuario
+grant create table to UserInformatica
+go
+```
+
 
 ```
 Es mejor indicar el esquema siempre, incluso aunque sea el esquema por defecto.
