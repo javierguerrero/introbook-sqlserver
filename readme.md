@@ -1,10 +1,18 @@
+
 <div align="center"><img src="./img/curso-sql-server-practico.png" alt="nodejs-logo"></div>
 
 # SQL Server práctico para desarrolladores (Introbook)
 
 ## Tabla de contenido
 
-- [MODULO 1: Trabajando con objetos de bases de datos](#)
+- [MODULO 1: Trabajando con objetos de bases de datos](#modulo-1-trabajando-con-objetos-de-bases-de-datos)
+    - [Comprendiendo las tablas](#comprendiendo-las-tablas)
+    - [Tipos de datos en SQL Server](#tipos-de-datos-en-sql-server)
+    - [Opciones de tablas y columnas](#ppciones-de-tablas-y-columnas)
+    - [Restricciones](#restricciones)
+    - [Vistas](#vistas)
+    - [Sinónimos](#sinónimos)
+    - [Triggers](#triggers)
 - [MODULO 2: T-SQL y programabilidad de bases de datos](#modulo-2-t-sql-y-programabilidad-de-bases-de-datos)
     - [Introducción a SQL](#introducción-a-sql)
     - [Instrucciones DDL y DML](#instrucciones-ddl-dml)
@@ -26,6 +34,23 @@
 
 
 ## MODULO 1: Trabajando con objetos de bases de datos
+
+### Comprendiendo las tablas
+
+
+
+### Tipos de datos en SQL Server
+
+### Opciones de tablas y columnas
+
+### Restricciones
+
+### Vistas
+
+### Sinónimos
+
+### Triggers
+
 
 ## MODULO 2: T-SQL y programabilidad de bases de datos
 
