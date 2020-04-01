@@ -88,6 +88,137 @@ Es mejor indicar el esquema siempre, incluso aunque sea el esquema por defecto.
 
 ### Triggers
 
+[![Triggers](https://img.youtube.com/vi/auHLx6XJbN8/0.jpg)](https://www.youtube.com/watch?v=auHLx6XJbN8&t=1082)
+
+Los Triggers son similarres a los store procedures, con la diferencia de que no pueden ser llamados directamente, pues están vinculado a una tabla y responden de acuerdo a una acción que se ejecuta sobre la tabla (insert, update o delete)
+
+Tipos de Triggers
+* AFTER… DML Trigger: ocurren después que se inserta, actualiza o eliminar un elemento dentro de la tabla
+* INSTEAD OF… DML Trigger: cancela la acción desencadenadora y rehace una nueva acción que nosotros designemos.
+
+Escenarios para usar Triggers
+* Validar datos antes de ser insertados. Similar a la restricción CHECK
+	* Debemos preferir las restricciones antes que los Triggers, puesto estos son más costosos.
+	* El Trigger es reactivo, es decir, el dato se inserta/modifica/eliminar y luego reacciona el Trigger. El constraint es proactivo
+	* Con los Triggers podemos validar condiciones más complejas
+* Actualizar inventarios
+
+
+Cuando se elimina un dato se tiene un tabla temporal que tiene el o los datos eliminados y se llama Deleted
+
+Cuando se inserta un dato se tiene un tabla temporal que tiene el o los datos insertados y se llama Inserted
+
+Cuando se actualiza un dato se tiene dos tablas que tiene el o los datos modificados, las tablas son deleted e inserted
+
+Un Trigger puede modificar una tabla  que tenga un Trigger.. lo cual puede generar una cadena de Triggers. Hay que evitar los ciclos! 
+
+
+
+```sql
+use Northwind
+
+create table HistorialEliminaciones
+(
+codigo int identity(1,1) primary key,
+fecha date, 
+accion varchar(200),
+usuario varchar(150)
+)
+go
+
+create trigger Tr_insert_cliente on customers for delete 
+as
+begin 
+	insert into HistorialEliminaciones(fecha, accion, usuario) values
+	(getdate(), 'se ha eliminado un dato', USER)
+end 
+
+--consultar los triggers sobre una tabla
+sp_helptrigger customers
+go
+
+
+--Quitar de inventario con un trigger
+create trigger Tr_quitarstock on [order details] for insert
+as
+begin
+	update Products 
+	set Products.UnitsInStock = Products.UnitsInStock - inserted.Quantity from inserted inner join Products on inserted.ProductID = Products.ProductID
+end
+
+--verificar unidades en stock de producto 34
+select * from Products where ProductID = 34
+
+--insertar a order details
+insert into [Order Details] (OrderID, ProductID, UnitPrice, Quantity, Discount)
+values (10248, 34, 14, 100, 0)
+go
+
+--Regregar a inventario con un trigger
+create trigger Tr_devolverstock on [order details] for delete
+as
+begin
+	update Products 
+	set Products.UnitsInStock = Products.UnitsInStock + deleted.Quantity from deleted inner join Products on deleted.ProductID = Products.ProductID
+end
+go
+
+
+
+--Trigger que actualiza las unidades en stock
+create trigger Tr_actualizastock on [order details] for update 
+as 
+begin 
+	update Products 
+	set Products.UnitsInStock = Products.UnitsInStock + deleted.Quantity from deleted inner join Products on deleted.ProductID = Products.ProductID
+
+	update Products 
+	set Products.UnitsInStock = Products.UnitsInStock - inserted.Quantity from inserted inner join Products on inserted.ProductID = Products.ProductID
+end
+
+
+--eliminar el dato
+delete from [Order Details]
+where OrderId=10248 and ProductId = 34
+go
+
+--modicar el dato pedido
+update [Order Details]
+set Quantity = 50
+where orderid=10248 and productid=34
+go
+--Triggers instead of
+
+create view catalogo_clientes_proveedores
+as
+select companyname, contactname, country, 'customers' as states from customers
+union all
+select companyname, contactname, country, 'suppliers' as states from Suppliers
+go
+
+
+create trigger Tr_catalogo_clientes_proveedores on catalogo_clientes_proveedores instead of insert
+as
+begin
+	insert into Suppliers (CompanyName, ContactName, Country)
+	select CompanyName, ContactName, Country from inserted where states = 'suppliers'
+
+	insert into customers(CustomerID, CompanyName, ContactName, Country)
+	select SUBSTRING(companyname, 1, 5) as codigo, companyname, contactname, country from inserted where states = 'customers'
+
+end
+go
+
+Insert into catalogo_clientes_proveedores (CompanyName, ContactName, Country, states)
+values ('Empresa X', 'Juan Perez', 'Nicaragua', 'supliers'),
+	   ('AntiguaExpress', 'Juan Perez', 'Costa Rica', 'customers'),
+	   ('America', 'Juan Perez', 'Panama', 'customers')
+go
+
+```
+
+
+
 
 ## MODULO 2: T-SQL y programabilidad de bases de datos
 
