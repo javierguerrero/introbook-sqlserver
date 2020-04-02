@@ -441,7 +441,9 @@ Soluciones:
     uso de subconsultas para filtrar registros maestros antes de unirlos con las otras tablas de detalle
 ```
 
-Common Table Expressions (CTE)
+#### Common Table Expressions (CTE)
+
+https://www.youtube.com/watch?v=79pM5FwuW4U&t=1351s
 
 * Ventajas
     * modularidad
@@ -1107,6 +1109,103 @@ BEGIN CATCH
 END CATCH
 ```
 In this example, the first INSERT statement succeeded. However, the second one failed due to the primary key constraint. Therefore, the error was caught by the CATCH block was raised again by the THROW statement.
+
+
+#### Cursores
+
+![Cursores en SQL Server](https://img.youtube.com/vi/j1EmJo9oP14/0.jpg)](https://www.youtube.com/watch?v=j1EmJo9oP14)
+
+Un cursor permite cargar a memoria RAM un conjunto de datos y navegar en él a través de un puntero.
+
+A SQL cursor is a database object that is used to retrieve data from a result set one row at a time.
+
+Una solución basada en cursores suele ser más lenta que una solución basada en un conjunto de registros. Esto debido a que un cursor procesa las filas de manera secuencial mientras que el SQL Server está diseñado para menejar eficientemente conjuntos de registros. El uso de cursores debe ser una práctica que debemos evitar. 
+
+Se recomienda usar conjuntos de resultados a través de una sentencia `SELECT` en vez de un cursor. Si es necesario cargar a memoria un conjunto de datos, usemos CTE o variables tipo tabla. Usar con preocupacion los cursores.
+
+Tipos de cursores:
+* Implícitos: los crea el SQL Server. 
+* Explícitos: creado por usuarios. 
+
+```sql
+use Northwind
+go
+
+--EJEMPLO 1
+--declarando el cursor
+declare cursor1 Cursor scroll
+	for select * from dbo.customers
+
+--abrir el cursor
+open cursor1
+
+--navegar
+fetch next from cursor1
+
+--cerrar el cursor
+close cursor1
+ 
+--liberar memoria
+deallocate cursor1
+
+
+ --EJEMPLO 2
+  declare @codigo varchar(5),
+ @compania varchar(200),
+ @contacto varchar(150),
+ @pais varchar(100)
+
+ declare ccustomers cursor GLOBAL static
+	for select customerid, companyname, contactname, country from customers
+
+open ccustomers
+fetch ccustomers into @codigo, @compania, @contacto, @pais
+while(@@FETCH_STATUS = 0) -- ¿existe registro?
+	begin
+	print @codigo + ' ' + @compania + ' ' + @contacto + ' ' + @pais
+	fetch ccustomers into @codigo, @compania, @contacto, @pais
+	end
+
+close ccustomers
+deallocate ccustomers
+go
+
+
+--EJEMPLO 3
+--Cursores actualizar datos
+declare @codigo varchar(5),
+@compania varchar(200),
+@contacto varchar(150),
+@pais varchar(100)
+
+declare ccustomers cursor GLOBAL
+	for select customerid, companyname, contactname, country from customers for UPDATE
+
+open ccustomers
+fetch ccustomers into @codigo, @compania, @contacto, @pais
+while(@@FETCH_STATUS = 0) -- ¿existe registro?
+	begin
+	UPDATE customers set companyname = @compania + '(M)'
+	where current of ccustomers 
+	fetch ccustomers into @codigo, @compania, @contacto, @pais
+	end
+
+close ccustomers
+deallocate ccustomers
+go
+
+
+--veamos como impacto en nuestra tabla
+select * from Customers
+
+```
+
+
+
+
+
+
+
 
 <div align="right"><small><a href="#tabla-de-contenido">volver al inicio</a></small></div>
 
