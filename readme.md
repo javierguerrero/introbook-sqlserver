@@ -1669,7 +1669,21 @@ Links
 * https://www.sqlshack.com/es/cual-es-la-diferencia-entre-indices-agrupados-y-no-agrupados-en-sql-server/
 * https://www.guru99.com/clustered-vs-non-clustered-index.html
 
+#### Mejorar el Rendimiento de las Consultas
+
+[![Mejorar el Rendimiento de las Consultas](https://img.youtube.com/vi/Tmo7jOgFItE/0.jpg)](https://www.youtube.com/watch?v=Tmo7jOgFItE)
+
+
+Notas del video:
+* El plan de ejecución es la manera indica la ruta que se siguión para devolver los datos. SQL Server, de acuerdo a las entradas/salidas de disco, costo del procesador, etc., toma la mejor decisión para devolver datos.
+* Table Scan: Recorre toda la tabla para encontrar un dato (ESTO ES MALO!!)
+* En una tabla solo puede haber UN índice clustereado
+* Index Scan: busca dato por dato pero dentro de un índice (Esto también es malo). 
+* Lo más eficiente es un Index Seek, lo cual implica encontrar rápidamente el dato que se está buscando.
+* Un índice no clusterado es una estructura adicional a la tabla
+
 <div align="right"><small><a href="#tabla-de-contenido">volver al inicio</a></small></div>
+
 
 ## MODULO 4: Trabajando con transacciones
 
