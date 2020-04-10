@@ -32,6 +32,12 @@
     - [Bloqueos](#bloqueos)
     - [Interbloqueos](#interbloqueos)
 
+- [SQL Server Interview Questions] 
+https://www.c-sharpcorner.com/article/most-asked-sql-queries-in-interview-questions/
+https://www.c-sharpcorner.com/UploadFile/puranindia/sql-server-interview-questions/
+TOP 30 SQL Interview Coding Tasks (book)
+
+
 
 ## MODULO 1: Trabajando con objetos de bases de datos
 
@@ -2144,5 +2150,7 @@ Webcast de Funciones y Triggers en Microsoft SQL Server: https://www.youtube.com
 
 Desarrollo de bases de datos con SQL Server - 70-762
 https://www.udemy.com/course/desarrollo-de-bases-de-datos-con-sql-server-70-762/
+
+
 
 
