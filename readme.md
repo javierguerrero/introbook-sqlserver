@@ -552,8 +552,68 @@ FROM
 > **Performance tip:** Normalmente, una columna calculada es un campo virtual que no persiste en la base de datos. Sin embargo, una razón para persistir una **columna calculada** es si tenemos que aplicarle un filtro (WHERE), también con el fin de permitir al diseñador crear un índice para acelerar las búsquedas.
 
 Formas de extender el cojunto de columnas:
-* columnas calculadas condicionales
-* usando funciones de categoría: funciones útiles para enumerar registros, pero también para examinar la calidad de datos.
+* Columnas calculadas condicionales
+    * Podemos añadir una columna calculada que use una condición, para lo cual empleamos la palabra clave CASE.
+    * La instrucción CASE también es útil cuando queremos gestionar los valores NULL.
+        * https://www.sqlservertutorial.net/sql-server-system-functions/sql-server-isnull-function/
+        * https://codingsight.com/dealing-with-nulls-in-sql-server/
+
+```sql
+SELECT 
+	OrderID, 
+	Quantity,
+	CASE WHEN Quantity > 30 THEN 'The quantity is greater than 30'
+		WHEN Quantity = 30 THEN 'The quantity is 30'
+		ELSE 'The quantity is under 30'
+	END AS QuantityText
+FROM [Order Details];
+```
+
+```sql
+SELECT 
+	CompanyName, 
+	City, 
+	Country
+FROM Customers
+ORDER BY
+		(CASE
+			WHEN City IS NULL THEN Country
+			ELSE City
+		END); 
+```
+
+```sql 
+--gestión de valores NULL
+SELECT ISNULL(NULL,20) result;
+SELECT COALESCE (NULL,'GREEN','HOPE','') AS NULLRESPONSE;
+```
+
+```sql
+SELECT 
+	FIRSTNAME
+	,LASTNAME
+	,ADDRESS
+	,FIRSTTRANDATE
+	,PHONENUMBER1 AS [PRIMARY PHONE NUMBER]
+	,ISNULL(CAST(PHONENUMBER2 AS VARCHAR), 'NO SECONDARY PHONE') AS [SECONDARY PHONE NUMBER]
+FROM CUSTOMER 
+WHERE PHONENUMBER2 IS NULL ;
+```
+
+```sql
+SELECT 
+	FIRSTNAME
+	,LASTNAME
+	,ADDRESS
+	,FIRSTTRANDATE
+	,PHONENUMBER1 AS [PRIMARY PHONE NUMBER]
+	,COALESCE(CAST(PHONENUMBER2 AS VARCHAR),CAST(PHONENUMBER3 AS VARCHAR), 'NO OTHER PHONE') AS [OTHER PHONE NUMBER]
+FROM CUSTOMER;
+```
+
+
+
+* Usando funciones de categoría: funciones útiles para enumerar registros, pero también para examinar la calidad de datos.
     * RANK()
     * ROW_NUMBER()
         * http://bit.ly/2TkxfRP
