@@ -33,8 +33,11 @@
     - [Interbloqueos](#interbloqueos)
 
 - [SQL Server Interview Questions] 
+
 https://www.c-sharpcorner.com/article/most-asked-sql-queries-in-interview-questions/
+
 https://www.c-sharpcorner.com/UploadFile/puranindia/sql-server-interview-questions/
+
 TOP 30 SQL Interview Coding Tasks (book)
 
 
@@ -1761,8 +1764,12 @@ Una transacción es un conjunto de instrucciones agrupado como una **unidad de t
 
 Los problemas de simultaneidad se abordan mediante el aislamiento de transacciones (mecanismo de bloqueo).
 
+
+[![Transacciones](https://img.youtube.com/vi/xbedZg38dy4/0.jpg)](https://www.youtube.com/watch?v=xbedZg38dy4)
+
+
 #### Propiedades ACID
-Toda transacción debe cumplir con los principios ACID para ser válida.
+Toda transacción debe cumplir con las propiedades ACID para ser válida.
 * A. Atomicidad: todo o nada.
 * C. Coherencia: solo un usuario puede hacer cambios sobre una unidad de datos concreta.
 * I. Independencia (aislamiento): Cada transacción es independiente de las otras transacciones.
